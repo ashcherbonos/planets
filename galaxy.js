@@ -5,6 +5,9 @@ const MAX_SPEED=0.5;
 const PLANET_MIN_SCALE=0.6;
 const PLANET_MAX_SCALE=1.2;
 const PLANET_MAX_DELTA_SCALE=PLANET_MAX_SCALE-PLANET_MIN_SCALE;
+const VISIBLE_SECTOR_OF_GALAXY_START = -3.3;
+const VISIBLE_SECTOR_OF_GALAXY_END = 0.2;
+const VISIBLE_SECTOR_OF_GALAXY = VISIBLE_SECTOR_OF_GALAXY_END-VISIBLE_SECTOR_OF_GALAXY_START;
 
 class Planet {
     constructor(id,phase){
@@ -29,7 +32,7 @@ export class Rim{
 
     static InitPlanets(planetIds){
         let planetsPhase=0;
-        let deltaPhase=2*Math.PI/planetIds.length ;
+        let deltaPhase=VISIBLE_SECTOR_OF_GALAXY/planetIds.length ;
         let planets=[];
         planetIds.forEach(id=>{
             planets.push(new Planet(id,planetsPhase));
@@ -85,8 +88,16 @@ export class Galaxy{
     }
 
     MovePlanet(planet,rim){
-        let top=(rim.orbit.r*Math.cos(rim.currentPhase+planet.phase)+rim.orbit.y);
-        let left=(rim.orbit.r*Math.sin(rim.currentPhase+planet.phase)+rim.orbit.x);
+        let phase = rim.currentPhase+planet.phase;
+        if(phase>VISIBLE_SECTOR_OF_GALAXY_END){
+            planet.phase-=VISIBLE_SECTOR_OF_GALAXY;
+            phase = rim.currentPhase+planet.phase;
+        }else if(phase<VISIBLE_SECTOR_OF_GALAXY_START){
+            planet.phase+=VISIBLE_SECTOR_OF_GALAXY;
+            phase = rim.currentPhase+planet.phase;
+        }
+        let top=(rim.orbit.r*Math.cos(phase)+rim.orbit.y);
+        let left=(rim.orbit.r*Math.sin(phase)+rim.orbit.x);
         planet.element.style.top=top+'%';
         planet.element.style.left=left+'%';
         this.ScalePlanet(planet,top);
