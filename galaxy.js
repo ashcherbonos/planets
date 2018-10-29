@@ -1,7 +1,10 @@
 const FRAME_TIME=15;
 const BASE_SPEED_PER_FRAME=0.0001;
 const DECCELERATION=0.975;
-const MAX_SPEED=1;
+const MAX_SPEED=0.5;
+const PLANET_MIN_SCALE=0.6;
+const PLANET_MAX_SCALE=1.2;
+const PLANET_MAX_DELTA_SCALE=PLANET_MAX_SCALE-PLANET_MIN_SCALE;
 
 class Planet {
     constructor(id,phase){
@@ -65,7 +68,7 @@ export class Galaxy{
                 this.galaxy.forEach(rim=>rim.run=true);
                 let deltaTime=Math.max((this.currentFrameTime-this.lastFrameTime),FRAME_TIME);
                 let inertia=(rim.currentPhase-rim.lastFramePhase)/deltaTime;
-                inertia=this.Clamp(inertia,MAX_SPEED/2);
+                inertia=this.Clamp(inertia,MAX_SPEED);
                 rim.inertiaSpeed=inertia;
             };
         });
@@ -77,24 +80,26 @@ export class Galaxy{
     }
 
     MoveRimTo(angle,rim){
-        rim.currentPhase = angle;
+        rim.currentPhase=angle;
         rim.planets.forEach(planet=>this.MovePlanet(planet,rim));
     }
 
     MovePlanet(planet,rim){
         let top=(rim.orbit.r*Math.cos(rim.currentPhase+planet.phase)+rim.orbit.y);
+        let left=(rim.orbit.r*Math.sin(rim.currentPhase+planet.phase)+rim.orbit.x);
         planet.element.style.top=top+'%';
-        planet.element.style.left=(rim.orbit.r*Math.sin(rim.currentPhase+planet.phase)+rim.orbit.x)+'%';
+        planet.element.style.left=left+'%';
         this.ScalePlanet(planet,top);
     }
 
-    ScalePlanet(planet, top){
-        planet.element.style.transform="scale("+0.6*(1+top/100)+")";
+    ScalePlanet(planet,proximity){
+        planet.element.style.transform="scale("+(PLANET_MIN_SCALE+PLANET_MAX_DELTA_SCALE*proximity/100)+")";
     }
 
     GetAngle(point,div){
-        let dx=point.x-this.GetCenterOf(div).x;
-        let dy=point.y-this.GetCenterOf(div).y;
+        let center=this.GetCenterOf(div);
+        let dx=point.x-center.x;
+        let dy=point.y-center.y;
         return Math.atan2(dy,dx);
     }
 
@@ -116,7 +121,6 @@ export class Galaxy{
                 if(rim.run){
                     rim.inertiaSpeed*=DECCELERATION;
                     let speed=BASE_SPEED_PER_FRAME*rim.speed+rim.inertiaSpeed;
-                    speed=this.Clamp(speed,MAX_SPEED);
                     this.MoveRimBy(speed,rim);
                 }
             });
