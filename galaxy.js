@@ -55,7 +55,7 @@ export class Rim{
     }
 
     InitPlanets(planetIds){
-        let planetsPhase=0;
+        let planetsPhase=VISIBLE_SECTOR_OF_GALAXY_START;
         let deltaPhase=VISIBLE_SECTOR_OF_GALAXY/planetIds.length ;
         let planets=[];
         planetIds.forEach(id=>{
@@ -134,7 +134,8 @@ class Utils{
         let center=this.GetCenterOf(div);
         let dx=point.x-center.x;
         let dy=point.y-center.y;
-        return Math.atan2(dy,dx);
+        console.log(Math.atan2(-dy,-dx));
+        return Math.atan2(-dy,-dx);
     }
 
     static GetCenterOf(div){
