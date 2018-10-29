@@ -88,19 +88,23 @@ export class Galaxy{
     }
 
     MovePlanet(planet,rim){
-        let phase = rim.currentPhase+planet.phase;
+        let phase = this.SumPhases(rim.currentPhase,planet.phase);
         if(phase>VISIBLE_SECTOR_OF_GALAXY_END){
             planet.phase-=VISIBLE_SECTOR_OF_GALAXY;
-            phase = rim.currentPhase+planet.phase;
+            phase = this.SumPhases(rim.currentPhase,planet.phase);
         }else if(phase<VISIBLE_SECTOR_OF_GALAXY_START){
             planet.phase+=VISIBLE_SECTOR_OF_GALAXY;
-            phase = rim.currentPhase+planet.phase;
+            phase = this.SumPhases(rim.currentPhase,planet.phase);
         }
         let top=(rim.orbit.r*Math.cos(phase)+rim.orbit.y);
         let left=(rim.orbit.r*Math.sin(phase)+rim.orbit.x);
         planet.element.style.top=top+'%';
         planet.element.style.left=left+'%';
         this.ScalePlanet(planet,top);
+    }
+
+    SumPhases(planetPhase,rimPhase){
+        return planetPhase+rimPhase;
     }
 
     ScalePlanet(planet,proximity){
