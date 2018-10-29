@@ -5,9 +5,9 @@ const MAX_SPEED=0.5;
 const PLANET_MIN_SCALE=0.6;
 const PLANET_MAX_SCALE=1.2;
 const PLANET_MAX_DELTA_SCALE=PLANET_MAX_SCALE-PLANET_MIN_SCALE;
-const VISIBLE_SECTOR_OF_GALAXY_START = -3.3;
-const VISIBLE_SECTOR_OF_GALAXY_END = 0.2;
-const VISIBLE_SECTOR_OF_GALAXY = VISIBLE_SECTOR_OF_GALAXY_END-VISIBLE_SECTOR_OF_GALAXY_START;
+const VISIBLE_SECTOR_OF_GALAXY_START=-3.3;
+const VISIBLE_SECTOR_OF_GALAXY_END=0.2;
+const VISIBLE_SECTOR_OF_GALAXY=VISIBLE_SECTOR_OF_GALAXY_END-VISIBLE_SECTOR_OF_GALAXY_START;
 
 class Planet {
     constructor(id,phase){
@@ -64,7 +64,7 @@ export class Galaxy{
                 rim.lastFramePhase=rim.currentFramePhase;
                 rim.currentFramePhase=rim.currentPhase;            
                 this.lastFrameTime=this.currentFrameTime;
-                this.currentFrameTime=new Date().getTime();
+                this.currentFrameTime=Date.now();
             };
 
             rim.div.onmouseleave=()=>{
@@ -88,13 +88,13 @@ export class Galaxy{
     }
 
     MovePlanet(planet,rim){
-        let phase = this.SumPhases(rim.currentPhase,planet.phase);
+        let phase=this.SumPhases(rim.currentPhase,planet.phase);
         if(phase>VISIBLE_SECTOR_OF_GALAXY_END){
             planet.phase-=VISIBLE_SECTOR_OF_GALAXY;
-            phase = this.SumPhases(rim.currentPhase,planet.phase);
+            phase=this.SumPhases(rim.currentPhase,planet.phase);
         }else if(phase<VISIBLE_SECTOR_OF_GALAXY_START){
             planet.phase+=VISIBLE_SECTOR_OF_GALAXY;
-            phase = this.SumPhases(rim.currentPhase,planet.phase);
+            phase=this.SumPhases(rim.currentPhase,planet.phase);
         }
         let top=(rim.orbit.r*Math.cos(phase)+rim.orbit.y);
         let left=(rim.orbit.r*Math.sin(phase)+rim.orbit.x);
