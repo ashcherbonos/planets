@@ -113,11 +113,10 @@ export class Galaxy{
     Run(){
         setInterval(()=>{
             this.galaxy.forEach(rim=>{
-                if(rim.run){
-                    rim.inertiaSpeed*=DECCELERATION;
-                    let speed=BASE_SPEED_PER_FRAME*rim.speed+rim.inertiaSpeed;
-                    rim.MoveBy(speed);
-                }
+                if(!rim.run){return;}
+                rim.inertiaSpeed*=DECCELERATION;
+                let speed=BASE_SPEED_PER_FRAME*rim.speed+rim.inertiaSpeed;
+                rim.MoveBy(speed);
             });
         }, FRAME_TIME);
     }
