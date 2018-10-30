@@ -134,7 +134,6 @@ class Utils{
         let center=this.GetCenterOf(div);
         let dx=point.x-center.x;
         let dy=point.y-center.y;
-        console.log(Math.atan2(-dy,-dx));
         return Math.atan2(-dy,-dx);
     }
 
