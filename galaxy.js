@@ -17,11 +17,9 @@ class Planet {
 
     MoveByRim(rim){
         let phase=this.SumPhases(rim.currentPhase,this.phase);
-        if(phase>VISIBLE_SECTOR_OF_GALAXY_END){
-            this.phase-=VISIBLE_SECTOR_OF_GALAXY;
-            phase=this.SumPhases(rim.currentPhase,this.phase);
-        }else if(phase<VISIBLE_SECTOR_OF_GALAXY_START){
-            this.phase+=VISIBLE_SECTOR_OF_GALAXY;
+        let positionInSector = this.PositionInSector(phase);
+        if(positionInSector!="in"){
+            this.phase += ( positionInSector == "before" ? 1 : -1 ) * VISIBLE_SECTOR_OF_GALAXY;
             phase=this.SumPhases(rim.currentPhase,this.phase);
         }
         let top=(rim.orbit.r*Math.cos(phase)+rim.orbit.y);
@@ -29,6 +27,10 @@ class Planet {
         this.element.style.top=top+'%';
         this.element.style.left=left+'%';
         this.Scale(top);
+    }
+
+    PositionInSector(phase){
+        return phase < VISIBLE_SECTOR_OF_GALAXY_START ? "before" : phase > VISIBLE_SECTOR_OF_GALAXY_END ? "after" : "in";
     }
 
     SumPhases(rimPhase,planetPhase){
