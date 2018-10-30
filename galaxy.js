@@ -10,31 +10,27 @@ const VISIBLE_SECTOR_OF_GALAXY_END=0.2;
 const VISIBLE_SECTOR_OF_GALAXY=VISIBLE_SECTOR_OF_GALAXY_END-VISIBLE_SECTOR_OF_GALAXY_START;
 
 class Planet {
-    constructor(id,phase){
+    constructor(id,phase,rim){
         this.element=document.getElementById(id);
         this.phase=phase;
+        this.rim=rim;
     }
 
-    MoveByRim(rim){
-        let phase=this.SumPhases(rim.currentPhase,this.phase);
-        let positionInSector = this.PositionInSector(phase);
-        if(positionInSector!="in"){
-            this.phase += ( positionInSector == "before" ? 1 : -1 ) * VISIBLE_SECTOR_OF_GALAXY;
-            phase=this.SumPhases(rim.currentPhase,this.phase);
-        }
-        let top=(rim.orbit.r*Math.cos(phase)+rim.orbit.y);
-        let left=(rim.orbit.r*Math.sin(phase)+rim.orbit.x);
+    MoveByRim(){
+        this.phase += this.sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
+        let top=(this.rim.orbit.r*Math.cos(this.phaseInGalaxy)+this.rim.orbit.y);
+        let left=(this.rim.orbit.r*Math.sin(this.phaseInGalaxy)+this.rim.orbit.x);
         this.element.style.top=top+'%';
         this.element.style.left=left+'%';
         this.Scale(top);
     }
 
-    PositionInSector(phase){
-        return phase < VISIBLE_SECTOR_OF_GALAXY_START ? "before" : phase > VISIBLE_SECTOR_OF_GALAXY_END ? "after" : "in";
+    get phaseInGalaxy(){
+        return this.rim.currentPhase+this.phase;
     }
 
-    SumPhases(rimPhase,planetPhase){
-        return planetPhase+rimPhase;
+    get sectorShiftSign(){
+        return this.phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 : this.phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 0;
     }
 
     Scale(proximity){
@@ -61,7 +57,7 @@ export class Rim{
         let deltaPhase=VISIBLE_SECTOR_OF_GALAXY/planetIds.length ;
         let planets=[];
         planetIds.forEach(id=>{
-            planets.push(new Planet(id,planetsPhase));
+            planets.push(new Planet(id,planetsPhase,this));
             planetsPhase+=deltaPhase;
         });
         return planets;
@@ -69,12 +65,12 @@ export class Rim{
 
     MoveBy(angle){
         this.currentPhase+=angle;
-        this.planets.forEach(planet=>planet.MoveByRim(this));
+        this.planets.forEach(planet=>planet.MoveByRim());
     }
 
     MoveTo(angle){
         this.currentPhase=angle;
-        this.planets.forEach(planet=>planet.MoveByRim(this));
+        this.planets.forEach(planet=>planet.MoveByRim());
     }
 }
 
