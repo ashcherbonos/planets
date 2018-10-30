@@ -64,8 +64,7 @@ export class Rim{
     }
 
     MoveBy(angle){
-        this.currentPhase+=angle;
-        this.planets.forEach(planet=>planet.MoveByRim());
+        this.MoveTo(this.currentPhase + angle)
     }
 
     MoveTo(angle){
