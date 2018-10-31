@@ -17,22 +17,26 @@ class Planet {
   }
 
   MoveByRim() {
-    this.phase +=  this.sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
+    this.JumpOverInvisibleSector();
     let top = ( this.rim.orbit.r * Math.cos(this.phaseInGalaxy) + this.rim.orbit.y );
     let left = ( this.rim.orbit.r * Math.sin(this.phaseInGalaxy) + this.rim.orbit.x );
     this.element.style.top = top + '%';
     this.element.style.left = left + '%';
     this.Scale(top);
-  }
-
-  get phaseInGalaxy() {
-    return this.rim.currentPhase + this.phase;
-  }
+	}
+	
+	JumpOverInvisibleSector(){
+		this.phase +=  this.sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
+	}
 
   get sectorShiftSign() {
 		return this.phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 :
 			this.phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
 			0;
+	}
+	
+	get phaseInGalaxy() {
+    return this.rim.currentPhase + this.phase;
 	}
 	
   Scale(proximity) {
