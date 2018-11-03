@@ -9,78 +9,6 @@ const VISIBLE_SECTOR_OF_GALAXY_START = -3.3;
 const VISIBLE_SECTOR_OF_GALAXY_END = 0.2;
 const VISIBLE_SECTOR_OF_GALAXY = VISIBLE_SECTOR_OF_GALAXY_END - VISIBLE_SECTOR_OF_GALAXY_START;
 
-class Planet {
-  constructor(id, phase, rim) {
-    this.element = document.getElementById(id);
-    this.phase = phase;
-    this.rim = rim;
-  }
-
-  MoveByRim() {
-    this.JumpOverInvisibleSector();
-    let top = ( this.rim.orbit.r * Math.cos(this.phaseInGalaxy) + this.rim.orbit.y );
-    let left = ( this.rim.orbit.r * Math.sin(this.phaseInGalaxy) + this.rim.orbit.x );
-    this.element.style.top = top + '%';
-    this.element.style.left = left + '%';
-    this.Scale(top);
-	}
-	
-	JumpOverInvisibleSector(){
-		this.phase +=  this.sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
-	}
-
-  get sectorShiftSign() {
-		return this.phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 :
-			this.phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
-			0;
-	}
-	
-	get phaseInGalaxy() {
-    return this.rim.currentPhase + this.phase;
-	}
-	
-  Scale(proximity) {
-		this.element.style.transform = "scale(" +
-			( PLANET_MIN_SCALE + PLANET_MAX_DELTA_SCALE * proximity / 100 ) +
-			")";
-  }
-}
-
-export class Rim {
-  constructor(planetIds, speed, orbit, id) {
-    this.speed = speed;        
-    this.run = true;
-    this.currentPhase = 0;
-    this.planets = this.InitPlanets(planetIds);
-    this.lastFramePhase = 0;
-    this.inertiaSpeed = 0;
-    this.orbit = orbit;
-    this.div = document.getElementById(id);
-    this.lastFramePhase = 0;
-    this.currentFramePhase = 0;
-  }
-
-  InitPlanets(planetIds) {
-    let planetsPhase = VISIBLE_SECTOR_OF_GALAXY_START;
-    let deltaPhase = VISIBLE_SECTOR_OF_GALAXY / planetIds.length;
-    let planets = [];
-    planetIds.forEach(id => {
-      planets.push( new Planet(id, planetsPhase, this) );
-      planetsPhase += deltaPhase;
-    });
-    return planets;
-  }
-
-  MoveBy(angle) {
-    this.MoveTo( this.currentPhase + angle )
-  }
-
-  MoveTo(angle) {
-    this.currentPhase = angle;
-    this.planets.forEach( planet => planet.MoveByRim() );
-  }
-}
-
 export class Galaxy {
   constructor(rims) {
     this.rims = rims;
@@ -126,6 +54,78 @@ export class Galaxy {
     }, FRAME_TIME);
   }
 } 
+
+export class Rim {
+  constructor(planetIds, speed, orbit, id) {
+    this.speed = speed;        
+    this.run = true;
+    this.currentPhase = 0;
+    this.planets = this.InitPlanets(planetIds);
+    this.lastFramePhase = 0;
+    this.inertiaSpeed = 0;
+    this.orbit = orbit;
+    this.div = document.getElementById(id);
+    this.lastFramePhase = 0;
+    this.currentFramePhase = 0;
+  }
+
+  InitPlanets(planetIds) {
+    let planetsPhase = VISIBLE_SECTOR_OF_GALAXY_START;
+    let deltaPhase = VISIBLE_SECTOR_OF_GALAXY / planetIds.length;
+    let planets = [];
+    planetIds.forEach(id => {
+      planets.push( new Planet(id, planetsPhase, this) );
+      planetsPhase += deltaPhase;
+    });
+    return planets;
+  }
+
+  MoveBy(angle) {
+    this.MoveTo( this.currentPhase + angle )
+  }
+
+  MoveTo(angle) {
+    this.currentPhase = angle;
+    this.planets.forEach( planet => planet.MoveByRim() );
+  }
+}
+
+class Planet {
+  constructor(id, phase, rim) {
+    this.element = document.getElementById(id);
+    this.phase = phase;
+    this.rim = rim;
+  }
+
+  MoveByRim() {
+    this.JumpOverInvisibleSector();
+    let top = ( this.rim.orbit.r * Math.cos(this.phaseInGalaxy) + this.rim.orbit.y );
+    let left = ( this.rim.orbit.r * Math.sin(this.phaseInGalaxy) + this.rim.orbit.x );
+    this.element.style.top = top + '%';
+    this.element.style.left = left + '%';
+    this.Scale(top);
+	}
+	
+	JumpOverInvisibleSector(){
+		this.phase +=  this.sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
+	}
+
+  get sectorShiftSign() {
+		return this.phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 :
+			this.phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
+			0;
+	}
+	
+	get phaseInGalaxy() {
+    return this.rim.currentPhase + this.phase;
+	}
+	
+  Scale(proximity) {
+		this.element.style.transform = "scale(" +
+			( PLANET_MIN_SCALE + PLANET_MAX_DELTA_SCALE * proximity / 100 ) +
+			")";
+  }
+}
 
 class Utils{
   static  Clamp(num, border) {

@@ -1,4 +1,4 @@
-import {Rim, Galaxy} from './galaxy.js';
+import {Galaxy, Rim} from './galaxy.js';
 
 let outerRimPlanets = [
     "planet_1_1",
