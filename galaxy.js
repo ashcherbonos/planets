@@ -103,7 +103,7 @@ class Planet {
     let left = ( this.rim.orbit.r * Math.sin(this.phaseInGalaxy) + this.rim.orbit.x );
     this.element.style.top = top + '%';
     this.element.style.left = left + '%';
-    this._scale(top);
+    this._scale( top / 100 );
 	}
 	
 	_jumpOverInvisibleSector(){
@@ -122,7 +122,7 @@ class Planet {
 	
   _scale(proximity) {
 		this.element.style.transform = "scale(" +
-			( PLANET_MIN_SCALE + PLANET_MAX_DELTA_SCALE * proximity / 100 ) +
+			( PLANET_MIN_SCALE + PLANET_MAX_DELTA_SCALE * proximity ) +
 			")";
   }
 }
