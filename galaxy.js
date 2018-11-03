@@ -83,14 +83,14 @@ export class Rim {
 
 export class Galaxy {
   constructor(rims) {
-    this.galaxy = rims;
+    this.rims = rims;
     this.lastFrameTime = 0;
     this.currentFrameTime = 0;
     this.AddListeners();
   }
 
   AddListeners() {
-    this.galaxy.forEach( rim => {
+    this.rims.forEach( rim => {
       rim.div.onmouseenter = (event) => {
         rim.run = false;
         rim.inertiaSpeed = 0;
@@ -106,7 +106,7 @@ export class Galaxy {
       };
 
       rim.div.onmouseleave = () => {
-        this.galaxy.forEach( rim => rim.run = true );
+        this.rims.forEach( rim => rim.run = true );
 				let deltaTime = this.currentFrameTime - this.lastFrameTime;
 				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
         inertia = Utils.Clamp(inertia, MAX_SPEED);
@@ -117,7 +117,7 @@ export class Galaxy {
 
   Run() {
     setInterval( () => {
-      this.galaxy.forEach( rim => {
+      this.rims.forEach( rim => {
         if(!rim.run) return;
         rim.inertiaSpeed *= DECCELERATION;
         let speed = BASE_SPEED_PER_FRAME * rim.speed + rim.inertiaSpeed;
@@ -132,10 +132,10 @@ class Utils{
     return Math.min(Math.max(num, -border), border);
   }
 
-  static  GetAngle(event, div) {
+  static  GetAngle({x, y}, div) {
     let center = this.GetCenterOf(div);
-    let dx = event.clientX - center.x;
-    let dy = event.clientY - center.y;
+    let dx = x - center.x;
+    let dy = y - center.y;
     return Math.atan2(-dy, -dx);
   }
 
