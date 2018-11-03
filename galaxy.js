@@ -99,24 +99,24 @@ class Planet {
 
   moveByRim() {
     this._jumpOverInvisibleSector();
-    let top = ( this.rim.orbit.r * Math.cos(this._phaseInGalaxy) + this.rim.orbit.y );
-    let left = ( this.rim.orbit.r * Math.sin(this._phaseInGalaxy) + this.rim.orbit.x );
+    let top = ( this.rim.orbit.r * Math.cos(this.phaseInGalaxy) + this.rim.orbit.y );
+    let left = ( this.rim.orbit.r * Math.sin(this.phaseInGalaxy) + this.rim.orbit.x );
     this.element.style.top = top + '%';
     this.element.style.left = left + '%';
     this._scale(top);
 	}
 	
 	_jumpOverInvisibleSector(){
-		this.phase +=  this._sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
+		this.phase +=  this.sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
 	}
 
-  get _sectorShiftSign() {
-		return this._phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 :
-			this._phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
+  get sectorShiftSign() {
+		return this.phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 :
+			this.phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
 			0;
 	}
 	
-	get _phaseInGalaxy() {
+	get phaseInGalaxy() {
     return this.rim.currentPhase + this.phase;
 	}
 	
@@ -128,11 +128,11 @@ class Planet {
 }
 
 class Utils{
-  static  clamp(num, border) {
+  static clamp(num, border) {
     return Math.min(Math.max(num, -border), border);
   }
 
-  static  getAngle({x, y}, div) {
+  static getAngle({x, y}, div) {
     let center = this._getCenterOf(div);
     let dx = x - center.x;
     let dy = y - center.y;
