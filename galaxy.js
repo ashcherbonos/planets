@@ -14,19 +14,19 @@ export class Galaxy {
     this.rims = rims;
     this.lastFrameTime = 0;
     this.currentFrameTime = 0;
-    this.AddListeners();
+    this._addListeners();
   }
 
-  AddListeners() {
+  _addListeners() {
     this.rims.forEach( rim => {
       rim.div.onmouseenter = (event) => {
         rim.run = false;
         rim.inertiaSpeed = 0;
-        rim.startPhase = rim.currentPhase + Utils.GetAngle(event, rim.div);
+        rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
       };
 
       rim.div.onmousemove = (event) => {
-        rim.MoveTo( rim.startPhase - Utils.GetAngle(event, rim.div) );
+        rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
         rim.lastFramePhase = rim.currentFramePhase;
         rim.currentFramePhase = rim.currentPhase;            
         this.lastFrameTime = this.currentFrameTime;
@@ -37,19 +37,19 @@ export class Galaxy {
         this.rims.forEach( rim => rim.run = true );
 				let deltaTime = this.currentFrameTime - this.lastFrameTime;
 				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
-        inertia = Utils.Clamp(inertia, MAX_SPEED);
+        inertia = Utils.clamp(inertia, MAX_SPEED);
         rim.inertiaSpeed = inertia;
       };
     });
   }
 
-  Run() {
+  run() {
     setInterval( () => {
       this.rims.forEach( rim => {
         if(!rim.run) return;
         rim.inertiaSpeed *= DECCELERATION;
         let speed = BASE_SPEED_PER_FRAME * rim.speed + rim.inertiaSpeed;
-        rim.MoveBy(speed);
+        rim.moveBy(speed);
       });
     }, FRAME_TIME);
   }
@@ -60,7 +60,7 @@ export class Rim {
     this.speed = speed;        
     this.run = true;
     this.currentPhase = 0;
-    this.planets = this.InitPlanets(planetIds);
+    this.planets = this._initPlanets(planetIds);
     this.lastFramePhase = 0;
     this.inertiaSpeed = 0;
     this.orbit = orbit;
@@ -69,7 +69,7 @@ export class Rim {
     this.currentFramePhase = 0;
   }
 
-  InitPlanets(planetIds) {
+  _initPlanets(planetIds) {
     let planetsPhase = VISIBLE_SECTOR_OF_GALAXY_START;
     let deltaPhase = VISIBLE_SECTOR_OF_GALAXY / planetIds.length;
     let planets = [];
@@ -80,13 +80,13 @@ export class Rim {
     return planets;
   }
 
-  MoveBy(angle) {
-    this.MoveTo( this.currentPhase + angle )
+  moveBy(angle) {
+    this.moveTo( this.currentPhase + angle )
   }
 
-  MoveTo(angle) {
+  moveTo(angle) {
     this.currentPhase = angle;
-    this.planets.forEach( planet => planet.MoveByRim() );
+    this.planets.forEach( planet => planet.moveByRim() );
   }
 }
 
@@ -97,30 +97,30 @@ class Planet {
     this.rim = rim;
   }
 
-  MoveByRim() {
-    this.JumpOverInvisibleSector();
-    let top = ( this.rim.orbit.r * Math.cos(this.phaseInGalaxy) + this.rim.orbit.y );
-    let left = ( this.rim.orbit.r * Math.sin(this.phaseInGalaxy) + this.rim.orbit.x );
+  moveByRim() {
+    this._jumpOverInvisibleSector();
+    let top = ( this.rim.orbit.r * Math.cos(this._phaseInGalaxy) + this.rim.orbit.y );
+    let left = ( this.rim.orbit.r * Math.sin(this._phaseInGalaxy) + this.rim.orbit.x );
     this.element.style.top = top + '%';
     this.element.style.left = left + '%';
-    this.Scale(top);
+    this._scale(top);
 	}
 	
-	JumpOverInvisibleSector(){
-		this.phase +=  this.sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
+	_jumpOverInvisibleSector(){
+		this.phase +=  this._sectorShiftSign * VISIBLE_SECTOR_OF_GALAXY;
 	}
 
-  get sectorShiftSign() {
-		return this.phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 :
-			this.phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
+  get _sectorShiftSign() {
+		return this._phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 :
+			this._phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
 			0;
 	}
 	
-	get phaseInGalaxy() {
+	get _phaseInGalaxy() {
     return this.rim.currentPhase + this.phase;
 	}
 	
-  Scale(proximity) {
+  _scale(proximity) {
 		this.element.style.transform = "scale(" +
 			( PLANET_MIN_SCALE + PLANET_MAX_DELTA_SCALE * proximity / 100 ) +
 			")";
@@ -128,18 +128,18 @@ class Planet {
 }
 
 class Utils{
-  static  Clamp(num, border) {
+  static  clamp(num, border) {
     return Math.min(Math.max(num, -border), border);
   }
 
-  static  GetAngle({x, y}, div) {
-    let center = this.GetCenterOf(div);
+  static  getAngle({x, y}, div) {
+    let center = this._getCenterOf(div);
     let dx = x - center.x;
     let dy = y - center.y;
     return Math.atan2(-dy, -dx);
   }
 
-  static GetCenterOf(div) {
+  static _getCenterOf(div) {
     return{
       x: div.offsetLeft + div.offsetWidth * 0.6, 
       y: div.offsetTop + div.offsetHeight * 0.5

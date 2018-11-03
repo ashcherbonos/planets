@@ -26,4 +26,4 @@ let rims = [
     new Rim(innerRimPlanets, 23, {x:50, y:48, r:52}, "galaxy_inner_rim"),
 ];
 
-new Galaxy(rims).Run();
+new Galaxy(rims).run();
