@@ -25,6 +25,12 @@ export class Galaxy {
         rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
       };
 
+      rim.div.ontouchstart = (event) => {
+        rim.run = false;
+        rim.inertiaSpeed = 0;
+        rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
+      };
+
       rim.div.onmousemove = (event) => {
         if(rim.run) return;
         rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
@@ -34,7 +40,24 @@ export class Galaxy {
         this.currentFrameTime = Date.now();
       };
 
+      rim.div.ontouchmove = (event) => {
+        if(rim.run) return;
+        rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
+        rim.lastFramePhase = rim.currentFramePhase;
+        rim.currentFramePhase = rim.currentPhase;            
+        this.lastFrameTime = this.currentFrameTime;
+        this.currentFrameTime = Date.now();
+      };
+
       rim.div.onmouseleave = () => {
+        this.rims.forEach( rim => rim.run = true );
+				let deltaTime = this.currentFrameTime - this.lastFrameTime;
+				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
+        inertia = Utils.clamp(inertia, MAX_SPEED);
+        rim.inertiaSpeed = inertia;
+      };
+
+      rim.div.ontouchend = () => {
         this.rims.forEach( rim => rim.run = true );
 				let deltaTime = this.currentFrameTime - this.lastFrameTime;
 				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
