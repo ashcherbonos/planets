@@ -17,78 +17,54 @@ class Galaxy {
     this._addListeners();
   }
 
+  _onPointerEnter(point, rim){
+    rim.run = false;
+    rim.inertiaSpeed = 0;
+    rim.startPhase = rim.currentPhase + Utils.getAngle(point, rim.div);
+  }
+
+  _onPointerMove(point, rim){
+    if(rim.run) return;
+    rim.moveTo( rim.startPhase - Utils.getAngle(point, rim.div) );
+    rim.lastFramePhase = rim.currentFramePhase;
+    rim.currentFramePhase = rim.currentPhase;            
+    this.lastFrameTime = this.currentFrameTime;
+    this.currentFrameTime = Date.now();
+  }
+
+  _onPointerOut(rim){
+    this.rims.forEach( rim => rim.run = true );
+		let deltaTime = this.currentFrameTime - this.lastFrameTime;
+		let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
+    inertia = Utils.clamp(inertia, MAX_SPEED);
+    rim.inertiaSpeed = inertia;
+  }
+
   _addListeners() {
     this.rims.forEach( rim => {
-
       rim.div.ontouchstart = (event) => {
-        console.log("touchstart");
-        console.log(event);
-        rim.run = false;
-        rim.inertiaSpeed = 0;
-        let point={
-          x:event.changedTouches[0].clientX,
-          y:event.changedTouches[0].clientY,
-        };
-        rim.startPhase = rim.currentPhase + Utils.getAngle(point, rim.div);
+        this._onPointerEnter(TouchToPoint(event), rim);
       };
 
       rim.div.ontouchmove = (event) => {
-        console.log("touchmove");
-        console.log(event);
-        
-        if(rim.run) return;
-        let point={
-          x:event.changedTouches[0].clientX,
-          y:event.changedTouches[0].clientY,
-        };
-        rim.moveTo( rim.startPhase - Utils.getAngle(point, rim.div) );
-        rim.lastFramePhase = rim.currentFramePhase;
-        rim.currentFramePhase = rim.currentPhase;            
-        this.lastFrameTime = this.currentFrameTime;
-        this.currentFrameTime = Date.now();
+        this._onPointerMove(TouchToPoint(event),rim);
       };
 
       rim.div.ontouchend = (event) => {
-        console.log("touchend");
-        console.log(event);
-        
-        this.rims.forEach( rim => rim.run = true );
-				let deltaTime = this.currentFrameTime - this.lastFrameTime;
-				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
-        inertia = Utils.clamp(inertia, MAX_SPEED);
-        rim.inertiaSpeed = inertia;
+        this._onPointerOut(rim);
       };
-
       
       rim.div.onmouseenter = (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        rim.run = false;
-        rim.inertiaSpeed = 0;
-        rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
+        this._onPointerEnter(event, rim);
       };
 
       rim.div.onmousemove = (event) => {
-        if(rim.run) return;
-        event.stopPropagation();
-        event.preventDefault();
-        rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
-        rim.lastFramePhase = rim.currentFramePhase;
-        rim.currentFramePhase = rim.currentPhase;            
-        this.lastFrameTime = this.currentFrameTime;
-        this.currentFrameTime = Date.now();
+        this._onPointerMove(event,rim);
       };
 
       rim.div.onmouseleave = () => {
-        event.stopPropagation();
-        event.preventDefault();
-        this.rims.forEach( rim => rim.run = true );
-				let deltaTime = this.currentFrameTime - this.lastFrameTime;
-				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
-        inertia = Utils.clamp(inertia, MAX_SPEED);
-        rim.inertiaSpeed = inertia;
+        this._onPointerOut(rim);
       };
-      
     });
   }
 
@@ -193,6 +169,13 @@ class Utils{
     return{
       x: div.offsetLeft + div.offsetWidth * 0.6, 
       y: div.offsetTop + div.offsetHeight * 0.5
+    }
+  }
+
+  static TouchToPoint(touchEvent){
+    return{
+      x:touchEvent.changedTouches[0].clientX,
+      y:touchEvent.changedTouches[0].clientY,
     }
   }
 }
