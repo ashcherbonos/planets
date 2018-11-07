@@ -26,6 +26,7 @@ export class Galaxy {
       };
 
       rim.div.onmousemove = (event) => {
+        if(rim.run) return;
         rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
         rim.lastFramePhase = rim.currentFramePhase;
         rim.currentFramePhase = rim.currentPhase;            

@@ -31,6 +31,7 @@ var Galaxy = function () {
       var _this = this;
 
       this.rims.forEach(function (rim) {
+
         rim.div.onmouseenter = function (event) {
           rim.run = false;
           rim.inertiaSpeed = 0;
@@ -38,6 +39,7 @@ var Galaxy = function () {
         };
 
         rim.div.onmousemove = function (event) {
+          if(rim.run) return;
           rim.moveTo(rim.startPhase - Utils.getAngle(event, rim.div));
           rim.lastFramePhase = rim.currentFramePhase;
           rim.currentFramePhase = rim.currentPhase;
@@ -181,8 +183,8 @@ var Utils = function () {
   }, {
     key: 'getAngle',
     value: function getAngle(_ref, div) {
-      var x = _ref.x,
-          y = _ref.y;
+      var x = _ref.clientX,
+          y = _ref.clientY;
 
       var center = this._getCenterOf(div);
       var dx = x - center.x;
