@@ -59,7 +59,7 @@ class Galaxy {
         rim.inertiaSpeed = inertia;
       };
 
-      /*
+      
       rim.div.onmouseenter = (event) => {
         event.stopPropagation();
         event.preventDefault();
@@ -88,7 +88,7 @@ class Galaxy {
         inertia = Utils.clamp(inertia, MAX_SPEED);
         rim.inertiaSpeed = inertia;
       };
-      */
+      
     });
   }
 
