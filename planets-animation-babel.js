@@ -20,51 +20,40 @@ var Galaxy = function () {
     _classCallCheck(this, Galaxy);
 
     this.rims = rims;
-    this.lastFrameTime = 0;
-    this.currentFrameTime = 0;
     this._addListeners();
   }
 
   _createClass(Galaxy, [{
     key: '_addListeners',
     value: function _addListeners() {
-      var _this = this;
-
       this.rims.forEach(function (rim) {
-
+        rim.div.ontouchstart = function (event) {
+          return rim.onPointerEnter(Utils.touchToPoint(event));
+        };
+        rim.div.ontouchmove = function (event) {
+          return rim.onPointerMove(Utils.touchToPoint(event));
+        };
+        rim.div.ontouchend = function (event) {
+          return rim.onPointerOut();
+        };
         rim.div.onmouseenter = function (event) {
-          rim.run = false;
-          rim.inertiaSpeed = 0;
-          rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
+          return rim.onPointerEnter(event);
         };
-
         rim.div.onmousemove = function (event) {
-          if(rim.run) return;
-          rim.moveTo(rim.startPhase - Utils.getAngle(event, rim.div));
-          rim.lastFramePhase = rim.currentFramePhase;
-          rim.currentFramePhase = rim.currentPhase;
-          _this.lastFrameTime = _this.currentFrameTime;
-          _this.currentFrameTime = Date.now();
+          return rim.onPointerMove(event);
         };
-
         rim.div.onmouseleave = function () {
-          _this.rims.forEach(function (rim) {
-            return rim.run = true;
-          });
-          var deltaTime = _this.currentFrameTime - _this.lastFrameTime;
-          var inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
-          inertia = Utils.clamp(inertia, MAX_SPEED);
-          rim.inertiaSpeed = inertia;
+          return rim.onPointerOut();
         };
       });
     }
   }, {
     key: 'run',
     value: function run() {
-      var _this2 = this;
+      var _this = this;
 
       setInterval(function () {
-        _this2.rims.forEach(function (rim) {
+        _this.rims.forEach(function (rim) {
           if (!rim.run) return;
           rim.inertiaSpeed *= DECCELERATION;
           var speed = BASE_SPEED_PER_FRAME * rim.speed + rim.inertiaSpeed;
@@ -92,21 +81,49 @@ var Rim = function () {
     this.div = document.getElementById(id);
     this.lastFramePhase = 0;
     this.currentFramePhase = 0;
+    this.lastFrameTime = 0;
+    this.currentFrameTime = 0;
   }
 
   _createClass(Rim, [{
     key: '_initPlanets',
     value: function _initPlanets(planetIds) {
-      var _this3 = this;
+      var _this2 = this;
 
       var planetsPhase = VISIBLE_SECTOR_OF_GALAXY_START;
       var deltaPhase = VISIBLE_SECTOR_OF_GALAXY / planetIds.length;
       var planets = [];
       planetIds.forEach(function (id) {
-        planets.push(new Planet(id, planetsPhase, _this3));
+        planets.push(new Planet(id, planetsPhase, _this2));
         planetsPhase += deltaPhase;
       });
       return planets;
+    }
+  }, {
+    key: 'onPointerEnter',
+    value: function onPointerEnter(point) {
+      this.run = false;
+      this.inertiaSpeed = 0;
+      this.startPhase = this.currentPhase + Utils.getAngle(point, this.div);
+    }
+  }, {
+    key: 'onPointerMove',
+    value: function onPointerMove(point) {
+      if (this.run) return;
+      this.moveTo(this.startPhase - Utils.getAngle(point, this.div));
+      this.lastFramePhase = this.currentFramePhase;
+      this.currentFramePhase = this.currentPhase;
+      this.lastFrameTime = this.currentFrameTime;
+      this.currentFrameTime = Date.now();
+    }
+  }, {
+    key: 'onPointerOut',
+    value: function onPointerOut() {
+      this.run = true;
+      var deltaTime = this.currentFrameTime - this.lastFrameTime;
+      var inertia = (this.currentPhase - this.lastFramePhase) / deltaTime;
+      inertia = Utils.clamp(inertia, MAX_SPEED);
+      this.inertiaSpeed = inertia;
     }
   }, {
     key: 'moveBy',
@@ -183,8 +200,8 @@ var Utils = function () {
   }, {
     key: 'getAngle',
     value: function getAngle(_ref, div) {
-      var x = _ref.clientX,
-          y = _ref.clientY;
+      var x = _ref.x,
+          y = _ref.y;
 
       var center = this._getCenterOf(div);
       var dx = x - center.x;
@@ -197,6 +214,14 @@ var Utils = function () {
       return {
         x: div.offsetLeft + div.offsetWidth * 0.6,
         y: div.offsetTop + div.offsetHeight * 0.5
+      };
+    }
+  }, {
+    key: 'touchToPoint',
+    value: function touchToPoint(touchEvent) {
+      return {
+        x: touchEvent.changedTouches[0].clientX,
+        y: touchEvent.changedTouches[0].clientY
       };
     }
   }]);
