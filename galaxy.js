@@ -12,61 +12,17 @@ const VISIBLE_SECTOR_OF_GALAXY = VISIBLE_SECTOR_OF_GALAXY_END - VISIBLE_SECTOR_O
 export class Galaxy {
   constructor(rims) {
     this.rims = rims;
-    this.lastFrameTime = 0;
-    this.currentFrameTime = 0;
     this._addListeners();
   }
 
   _addListeners() {
     this.rims.forEach( rim => {
-
-      rim.div.ontouchstart = (event) => {
-        rim.run = false;
-        rim.inertiaSpeed = 0;
-        rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
-      };
-
-      rim.div.ontouchmove = (event) => {
-        if(rim.run) return;
-        rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
-        rim.lastFramePhase = rim.currentFramePhase;
-        rim.currentFramePhase = rim.currentPhase;            
-        this.lastFrameTime = this.currentFrameTime;
-        this.currentFrameTime = Date.now();
-      };
-
-      rim.div.ontouchend = () => {
-        this.rims.forEach( rim => rim.run = true );
-				let deltaTime = this.currentFrameTime - this.lastFrameTime;
-				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
-        inertia = Utils.clamp(inertia, MAX_SPEED);
-        rim.inertiaSpeed = inertia;
-      };
-
-      /*
-      rim.div.onmouseenter = (event) => {
-        rim.run = false;
-        rim.inertiaSpeed = 0;
-        rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
-      };
-
-      rim.div.onmousemove = (event) => {
-        if(rim.run) return;
-        rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
-        rim.lastFramePhase = rim.currentFramePhase;
-        rim.currentFramePhase = rim.currentPhase;            
-        this.lastFrameTime = this.currentFrameTime;
-        this.currentFrameTime = Date.now();
-      };
-
-      rim.div.onmouseleave = () => {
-        this.rims.forEach( rim => rim.run = true );
-				let deltaTime = this.currentFrameTime - this.lastFrameTime;
-				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
-        inertia = Utils.clamp(inertia, MAX_SPEED);
-        rim.inertiaSpeed = inertia;
-      };
-      */
+      rim.div.ontouchstart = (event) => rim.onPointerEnter(Utils.touchToPoint(event));
+      rim.div.ontouchmove = (event) => rim.onPointerMove(Utils.touchToPoint(event));
+      rim.div.ontouchend = (event) => rim.onPointerOut();
+      rim.div.onmouseenter = (event) => rim.onPointerEnter(event);
+      rim.div.onmousemove = (event) => rim.onPointerMove(event);
+      rim.div.onmouseleave = () => rim.onPointerOut();
     });
   }
 
@@ -95,6 +51,8 @@ export class Rim {
     this.div = document.getElementById(id);
     this.lastFramePhase = 0;
     this.currentFramePhase = 0;
+    this.lastFrameTime = 0;
+    this.currentFrameTime = 0;
   }
 
   _initPlanets(planetIds) {
@@ -106,6 +64,29 @@ export class Rim {
       planetsPhase += deltaPhase;
     });
     return planets;
+  }
+
+  onPointerEnter(point){
+    this.run = false;
+    this.inertiaSpeed = 0;
+    this.startPhase = this.currentPhase + Utils.getAngle(point, this.div);
+  }
+
+  onPointerMove(point){
+    if(this.run) return;
+    this.moveTo( this.startPhase - Utils.getAngle(point, this.div) );
+    this.lastFramePhase = this.currentFramePhase;
+    this.currentFramePhase = this.currentPhase;            
+    this.lastFrameTime = this.currentFrameTime;
+    this.currentFrameTime = Date.now();
+  }
+
+  onPointerOut(){
+    this.run = true;
+		let deltaTime = this.currentFrameTime - this.lastFrameTime;
+		let inertia = (this.currentPhase - this.lastFramePhase) / deltaTime;
+    inertia = Utils.clamp(inertia, MAX_SPEED);
+    this.inertiaSpeed = inertia;
   }
 
   moveBy(angle) {
@@ -171,6 +152,13 @@ class Utils{
     return{
       x: div.offsetLeft + div.offsetWidth * 0.6, 
       y: div.offsetTop + div.offsetHeight * 0.5
+    }
+  }
+
+  static touchToPoint(touchEvent){
+    return{
+      x:touchEvent.changedTouches[0].clientX,
+      y:touchEvent.changedTouches[0].clientY,
     }
   }
 }

@@ -12,59 +12,17 @@ const VISIBLE_SECTOR_OF_GALAXY = VISIBLE_SECTOR_OF_GALAXY_END - VISIBLE_SECTOR_O
 class Galaxy {
   constructor(rims) {
     this.rims = rims;
-    this.lastFrameTime = 0;
-    this.currentFrameTime = 0;
     this._addListeners();
-  }
-
-  _onPointerEnter(point, rim){
-    rim.run = false;
-    rim.inertiaSpeed = 0;
-    rim.startPhase = rim.currentPhase + Utils.getAngle(point, rim.div);
-  }
-
-  _onPointerMove(point, rim){
-    if(rim.run) return;
-    rim.moveTo( rim.startPhase - Utils.getAngle(point, rim.div) );
-    rim.lastFramePhase = rim.currentFramePhase;
-    rim.currentFramePhase = rim.currentPhase;            
-    this.lastFrameTime = this.currentFrameTime;
-    this.currentFrameTime = Date.now();
-  }
-
-  _onPointerOut(rim){
-    this.rims.forEach( rim => rim.run = true );
-		let deltaTime = this.currentFrameTime - this.lastFrameTime;
-		let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
-    inertia = Utils.clamp(inertia, MAX_SPEED);
-    rim.inertiaSpeed = inertia;
   }
 
   _addListeners() {
     this.rims.forEach( rim => {
-      rim.div.ontouchstart = (event) => {
-        this._onPointerEnter(Utils.touchToPoint(event), rim);
-      };
-
-      rim.div.ontouchmove = (event) => {
-        this._onPointerMove(Utils.touchToPoint(event),rim);
-      };
-
-      rim.div.ontouchend = (event) => {
-        this._onPointerOut(rim);
-      };
-      
-      rim.div.onmouseenter = (event) => {
-        this._onPointerEnter(event, rim);
-      };
-
-      rim.div.onmousemove = (event) => {
-        this._onPointerMove(event,rim);
-      };
-
-      rim.div.onmouseleave = () => {
-        this._onPointerOut(rim);
-      };
+      rim.div.ontouchstart = (event) => rim.onPointerEnter(Utils.touchToPoint(event));
+      rim.div.ontouchmove = (event) => rim.onPointerMove(Utils.touchToPoint(event));
+      rim.div.ontouchend = (event) => rim.onPointerOut();
+      rim.div.onmouseenter = (event) => rim.onPointerEnter(event);
+      rim.div.onmousemove = (event) => rim.onPointerMove(event);
+      rim.div.onmouseleave = () => rim.onPointerOut();
     });
   }
 
@@ -93,6 +51,8 @@ class Rim {
     this.div = document.getElementById(id);
     this.lastFramePhase = 0;
     this.currentFramePhase = 0;
+    this.lastFrameTime = 0;
+    this.currentFrameTime = 0;
   }
 
   _initPlanets(planetIds) {
@@ -104,6 +64,29 @@ class Rim {
       planetsPhase += deltaPhase;
     });
     return planets;
+  }
+
+  onPointerEnter(point){
+    this.run = false;
+    this.inertiaSpeed = 0;
+    this.startPhase = this.currentPhase + Utils.getAngle(point, this.div);
+  }
+
+  onPointerMove(point){
+    if(this.run) return;
+    this.moveTo( this.startPhase - Utils.getAngle(point, this.div) );
+    this.lastFramePhase = this.currentFramePhase;
+    this.currentFramePhase = this.currentPhase;            
+    this.lastFrameTime = this.currentFrameTime;
+    this.currentFrameTime = Date.now();
+  }
+
+  onPointerOut(){
+    this.run = true;
+		let deltaTime = this.currentFrameTime - this.lastFrameTime;
+		let inertia = (this.currentPhase - this.lastFramePhase) / deltaTime;
+    inertia = Utils.clamp(inertia, MAX_SPEED);
+    this.inertiaSpeed = inertia;
   }
 
   moveBy(angle) {
@@ -179,7 +162,6 @@ class Utils{
     }
   }
 }
-
 
 let outerRimPlanets = [
     "planet_1_1",
