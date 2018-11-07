@@ -19,6 +19,31 @@ class Galaxy {
 
   _addListeners() {
     this.rims.forEach( rim => {
+
+      rim.div.ontouchstart = (event) => {
+        rim.run = false;
+        rim.inertiaSpeed = 0;
+        rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
+      };
+
+      rim.div.ontouchmove = (event) => {
+        if(rim.run) return;
+        rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
+        rim.lastFramePhase = rim.currentFramePhase;
+        rim.currentFramePhase = rim.currentPhase;            
+        this.lastFrameTime = this.currentFrameTime;
+        this.currentFrameTime = Date.now();
+      };
+
+      rim.div.ontouchend = () => {
+        this.rims.forEach( rim => rim.run = true );
+				let deltaTime = this.currentFrameTime - this.lastFrameTime;
+				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
+        inertia = Utils.clamp(inertia, MAX_SPEED);
+        rim.inertiaSpeed = inertia;
+      };
+
+      /*
       rim.div.onmouseenter = (event) => {
         rim.run = false;
         rim.inertiaSpeed = 0;
@@ -26,6 +51,7 @@ class Galaxy {
       };
 
       rim.div.onmousemove = (event) => {
+        if(rim.run) return;
         rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
         rim.lastFramePhase = rim.currentFramePhase;
         rim.currentFramePhase = rim.currentPhase;            
@@ -40,6 +66,7 @@ class Galaxy {
         inertia = Utils.clamp(inertia, MAX_SPEED);
         rim.inertiaSpeed = inertia;
       };
+      */
     });
   }
 
@@ -148,30 +175,32 @@ class Utils{
   }
 }
 
+
 let outerRimPlanets = [
-  "planet_1_1",
-  "planet_1_2",
-  "planet_1_3",
-  "planet_1_4",
-  "planet_1_5",
-  "planet_1_6",
+    "planet_1_1",
+    "planet_1_2",
+    "planet_1_3",
+    "planet_1_4",
+    "planet_1_5",
+    "planet_1_6",
 ];
 
 let middleRimPlanets = [
-  "planet_2_1",
-  "planet_2_2",
-  "planet_2_3",
+    "planet_2_1",
+    "planet_2_2",
+    "planet_2_3",
 ];
 
 let innerRimPlanets = [
-  "planet_3_1",
-  "planet_3_2",
+    "planet_3_1",
+    "planet_3_2",
 ];
 
 let rims = [
-  new Rim(outerRimPlanets, 3, {x:48, y:48, r:50}, "galaxy_outer_rim"),
-  new Rim(middleRimPlanets, 13, {x:50, y:42, r:52}, "galaxy_middle_rim"),
-  new Rim(innerRimPlanets, 23, {x:50, y:48, r:52}, "galaxy_inner_rim"),
+    new Rim(outerRimPlanets, 3, {x:48, y:48, r:50}, "galaxy_outer_rim"),
+    new Rim(middleRimPlanets, 13, {x:50, y:42, r:52}, "galaxy_middle_rim"),
+    new Rim(innerRimPlanets, 23, {x:50, y:48, r:52}, "galaxy_inner_rim"),
 ];
 
 new Galaxy(rims).run();
+
