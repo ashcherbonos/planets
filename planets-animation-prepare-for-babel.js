@@ -19,8 +19,10 @@ class Galaxy {
 
   _addListeners() {
     this.rims.forEach( rim => {
-/*
+
       rim.div.ontouchstart = (event) => {
+        event.stopPropagation();
+        event.preventDefault();
         console.log("touchstart");
         rim.run = false;
         rim.inertiaSpeed = 0;
@@ -28,6 +30,8 @@ class Galaxy {
       };
 
       rim.div.ontouchmove = (event) => {
+        event.stopPropagation();
+        event.preventDefault();
         console.log("touchmove");
         if(rim.run) return;
         rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
@@ -38,6 +42,8 @@ class Galaxy {
       };
 
       rim.div.ontouchend = () => {
+        event.stopPropagation();
+        event.preventDefault();
         console.log("touchend");
         this.rims.forEach( rim => rim.run = true );
 				let deltaTime = this.currentFrameTime - this.lastFrameTime;
@@ -45,8 +51,8 @@ class Galaxy {
         inertia = Utils.clamp(inertia, MAX_SPEED);
         rim.inertiaSpeed = inertia;
       };
-*/
-      
+
+      /*
       rim.div.onmouseenter = (event) => {
         event.stopPropagation();
         event.preventDefault();
@@ -75,7 +81,7 @@ class Galaxy {
         inertia = Utils.clamp(inertia, MAX_SPEED);
         rim.inertiaSpeed = inertia;
       };
-      
+      */
     });
   }
 
