@@ -43,11 +43,11 @@ class Galaxy {
   _addListeners() {
     this.rims.forEach( rim => {
       rim.div.ontouchstart = (event) => {
-        this._onPointerEnter(TouchToPoint(event), rim);
+        this._onPointerEnter(Utils.touchToPoint(event), rim);
       };
 
       rim.div.ontouchmove = (event) => {
-        this._onPointerMove(TouchToPoint(event),rim);
+        this._onPointerMove(Utils.touchToPoint(event),rim);
       };
 
       rim.div.ontouchend = (event) => {
@@ -172,7 +172,7 @@ class Utils{
     }
   }
 
-  static TouchToPoint(touchEvent){
+  static touchToPoint(touchEvent){
     return{
       x:touchEvent.changedTouches[0].clientX,
       y:touchEvent.changedTouches[0].clientY,
