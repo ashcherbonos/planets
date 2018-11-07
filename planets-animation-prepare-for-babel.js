@@ -21,12 +21,14 @@ class Galaxy {
     this.rims.forEach( rim => {
 
       rim.div.ontouchstart = (event) => {
+        console.log("touchstart");
         rim.run = false;
         rim.inertiaSpeed = 0;
         rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
       };
 
       rim.div.ontouchmove = (event) => {
+        console.log("touchmove");
         if(rim.run) return;
         rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
         rim.lastFramePhase = rim.currentFramePhase;
@@ -36,6 +38,7 @@ class Galaxy {
       };
 
       rim.div.ontouchend = () => {
+        console.log("touchend");
         this.rims.forEach( rim => rim.run = true );
 				let deltaTime = this.currentFrameTime - this.lastFrameTime;
 				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
