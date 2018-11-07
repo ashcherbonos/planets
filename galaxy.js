@@ -19,11 +19,6 @@ export class Galaxy {
 
   _addListeners() {
     this.rims.forEach( rim => {
-      rim.div.onmouseenter = (event) => {
-        rim.run = false;
-        rim.inertiaSpeed = 0;
-        rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
-      };
 
       rim.div.ontouchstart = (event) => {
         rim.run = false;
@@ -31,7 +26,7 @@ export class Galaxy {
         rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
       };
 
-      rim.div.onmousemove = (event) => {
+      rim.div.ontouchmove = (event) => {
         if(rim.run) return;
         rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
         rim.lastFramePhase = rim.currentFramePhase;
@@ -40,7 +35,22 @@ export class Galaxy {
         this.currentFrameTime = Date.now();
       };
 
-      rim.div.ontouchmove = (event) => {
+      rim.div.ontouchend = () => {
+        this.rims.forEach( rim => rim.run = true );
+				let deltaTime = this.currentFrameTime - this.lastFrameTime;
+				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
+        inertia = Utils.clamp(inertia, MAX_SPEED);
+        rim.inertiaSpeed = inertia;
+      };
+
+      /*
+      rim.div.onmouseenter = (event) => {
+        rim.run = false;
+        rim.inertiaSpeed = 0;
+        rim.startPhase = rim.currentPhase + Utils.getAngle(event, rim.div);
+      };
+
+      rim.div.onmousemove = (event) => {
         if(rim.run) return;
         rim.moveTo( rim.startPhase - Utils.getAngle(event, rim.div) );
         rim.lastFramePhase = rim.currentFramePhase;
@@ -56,14 +66,7 @@ export class Galaxy {
         inertia = Utils.clamp(inertia, MAX_SPEED);
         rim.inertiaSpeed = inertia;
       };
-
-      rim.div.ontouchend = () => {
-        this.rims.forEach( rim => rim.run = true );
-				let deltaTime = this.currentFrameTime - this.lastFrameTime;
-				let inertia = (rim.currentPhase - rim.lastFramePhase) / deltaTime;
-        inertia = Utils.clamp(inertia, MAX_SPEED);
-        rim.inertiaSpeed = inertia;
-      };
+      */
     });
   }
 
