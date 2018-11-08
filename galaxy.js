@@ -1,4 +1,4 @@
-const FRAME_TIME = 20;
+const FRAME_TIME = 16;
 const BASE_SPEED_PER_FRAME = 0.0001;
 const DECCELERATION = 0.975;
 const MAX_SPEED = 0.5;
