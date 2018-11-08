@@ -17,8 +17,8 @@ class Galaxy {
 
   _addListeners() {
     this.rims.forEach( rim => {
-      rim.div.ontouchstart = (event) => rim.onPointerEnter(Utils.touchToPoint(event));
-      rim.div.ontouchmove = (event) => rim.onPointerMove(Utils.touchToPoint(event));
+      rim.div.ontouchstart = (event) => rim.onPointerEnter(event.changedTouches[0]);
+      rim.div.ontouchmove = (event) => rim.onPointerMove(event.changedTouches[0]);
       rim.div.ontouchend = (event) => rim.onPointerOut();
       rim.div.onmouseenter = (event) => rim.onPointerEnter(event);
       rim.div.onmousemove = (event) => rim.onPointerMove(event);
@@ -141,10 +141,10 @@ class Utils{
     return Math.min(Math.max(num, -border), border);
   }
 
-  static getAngle({x, y}, div) {
+  static getAngle({clientX, clientY}, div) {
     let center = this._getCenterOf(div);
-    let dx = x - center.x;
-    let dy = y - center.y;
+    let dx = clientX - center.x;
+    let dy = clientY - center.y;
     return Math.atan2(-dy, -dx);
   }
 
@@ -152,13 +152,6 @@ class Utils{
     return{
       x: div.offsetLeft + div.offsetWidth * 0.6, 
       y: div.offsetTop + div.offsetHeight * 0.5
-    }
-  }
-
-  static touchToPoint(touchEvent){
-    return{
-      x:touchEvent.changedTouches[0].clientX,
-      y:touchEvent.changedTouches[0].clientY,
     }
   }
 }

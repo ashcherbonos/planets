@@ -28,10 +28,10 @@ var Galaxy = function () {
     value: function _addListeners() {
       this.rims.forEach(function (rim) {
         rim.div.ontouchstart = function (event) {
-          return rim.onPointerEnter(Utils.touchToPoint(event));
+          return rim.onPointerEnter(event.changedTouches[0]);
         };
         rim.div.ontouchmove = function (event) {
-          return rim.onPointerMove(Utils.touchToPoint(event));
+          return rim.onPointerMove(event.changedTouches[0]);
         };
         rim.div.ontouchend = function (event) {
           return rim.onPointerOut();
@@ -200,12 +200,12 @@ var Utils = function () {
   }, {
     key: 'getAngle',
     value: function getAngle(_ref, div) {
-      var x = _ref.x,
-          y = _ref.y;
+      var clientX = _ref.clientX,
+          clientY = _ref.clientY;
 
       var center = this._getCenterOf(div);
-      var dx = x - center.x;
-      var dy = y - center.y;
+      var dx = clientX - center.x;
+      var dy = clientY - center.y;
       return Math.atan2(-dy, -dx);
     }
   }, {
@@ -214,14 +214,6 @@ var Utils = function () {
       return {
         x: div.offsetLeft + div.offsetWidth * 0.6,
         y: div.offsetTop + div.offsetHeight * 0.5
-      };
-    }
-  }, {
-    key: 'touchToPoint',
-    value: function touchToPoint(touchEvent) {
-      return {
-        x: touchEvent.changedTouches[0].clientX,
-        y: touchEvent.changedTouches[0].clientY
       };
     }
   }]);
