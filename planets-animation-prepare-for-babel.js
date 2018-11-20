@@ -112,7 +112,7 @@ class Planet {
     let left = ( this.rim.orbit.r * Math.sin(this.phaseInGalaxy) + this.rim.orbit.x );
     this.element.style.top = top + '%';
     this.element.style.left = left + '%';
-    this._scale( top / 100 );
+    this._scale( 1 - top / 100 );
 	}
 	
 	_jumpOverInvisibleSector(){
@@ -177,9 +177,9 @@ let innerRimPlanets = [
 ];
 
 let rims = [
-    new Rim(outerRimPlanets, 3, {x:48, y:48, r:50}, "galaxy_outer_rim"),
-    new Rim(middleRimPlanets, 13, {x:50, y:42, r:52}, "galaxy_middle_rim"),
-    new Rim(innerRimPlanets, 23, {x:50, y:48, r:52}, "galaxy_inner_rim"),
+  new Rim(outerRimPlanets, -3, {x:48, y:46, r:50}, "galaxy_outer_rim"),
+  new Rim(middleRimPlanets, -13, {x:50, y:42, r:52}, "galaxy_middle_rim"),
+  new Rim(innerRimPlanets, -23, {x:50, y:44, r:52}, "galaxy_inner_rim"),
 ];
 
 new Galaxy(rims).run();

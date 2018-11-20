@@ -112,7 +112,7 @@ class Planet {
     let left = ( this.rim.orbit.r * Math.sin(this.phaseInGalaxy) + this.rim.orbit.x );
     this.element.style.top = top + '%';
     this.element.style.left = left + '%';
-    this._scale( top / 100 );
+    this._scale( 1 - top / 100 );
 	}
 	
 	_jumpOverInvisibleSector(){
