@@ -149,9 +149,10 @@ class Utils{
   }
 
   static _getCenterOf(div) {
+    let rect = div.getBoundingClientRect();
     return{
-      x: div.offsetLeft + div.offsetWidth * 0.6, 
-      y: div.offsetTop + div.offsetHeight * 0.5
+      x: (rect.left+rect.right)/2, 
+      y: (rect.top+rect.bottom)/2
     }
   }
 }
