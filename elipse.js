@@ -1,6 +1,9 @@
 let mousePosition;
 let halfSize = {x:25,y:25};
 
+const trashold = 50;
+
+
 let parent = document.getElementById("galaxy_parent_div");
 
 var div = document.getElementById('move');
@@ -11,24 +14,41 @@ div.style.height = halfSize.y*2+"px";
 
 
 let orbitDiv = document.getElementById("galaxy_outer_rim");
-let rect = orbitDiv.getBoundingClientRect();
-let parentRect = parent.getBoundingClientRect();
 
-let elipse={
-  cx: ((rect.left+rect.right)/2),
-  cy: ((rect.top+rect.bottom)/2),
-  rx: 1.82*(parentRect.right - parentRect.left)/2,
-  ry: 0.79*(parentRect.bottom - parentRect.top)/2,
-  rotation: -7/180*Math.PI,
+
+let elipse={};
+
+function getElips(){
+  rect = orbitDiv.getBoundingClientRect();
+  parentRect = parent.getBoundingClientRect();
+
+  return{
+    cx: ((rect.left+rect.right)/2),
+    cy: ((rect.top+rect.bottom)/2),
+    rx: 1.82*(parentRect.right - parentRect.left)/2,
+    ry: 0.79*(parentRect.bottom - parentRect.top)/2,
+    rotation: -7/180*Math.PI,
+  }
 }
 
 document.addEventListener('mousemove', function(event) {
     event.preventDefault();
+    elipse = getElips();
     let angle = GetAngle(event);
     let radius = GetRadiusOfElipse(angle);
     let pointOnElipse = PolarToCartesian(radius,angle);
-    div.style.left = (pointOnElipse.x+elipse.cx-halfSize.x) + 'px';
-    div.style.top  = (pointOnElipse.y+elipse.cy-halfSize.y) + 'px';
+
+    let x = pointOnElipse.x+elipse.cx;
+    let y = pointOnElipse.y+elipse.cy;
+
+    let onOrbit = Math.abs(event.clientX-x) < trashold && Math.abs(event.clientY-y) < trashold;
+
+    console.log(onOrbit);
+
+    if(onOrbit){
+      div.style.left = (pointOnElipse.x+elipse.cx-halfSize.x) + 'px';
+      div.style.top  = (pointOnElipse.y+elipse.cy-halfSize.y) + 'px';
+    }
 }, true);
 
 function GetAngle({clientX, clientY}){
