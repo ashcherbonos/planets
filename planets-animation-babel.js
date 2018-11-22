@@ -14,6 +14,7 @@ var PLANET_MAX_DELTA_SCALE = PLANET_MAX_SCALE - PLANET_MIN_SCALE;
 var VISIBLE_SECTOR_OF_GALAXY_START = -3.3;
 var VISIBLE_SECTOR_OF_GALAXY_END = 0.2;
 var VISIBLE_SECTOR_OF_GALAXY = VISIBLE_SECTOR_OF_GALAXY_END - VISIBLE_SECTOR_OF_GALAXY_START;
+var ORBIT_INTERACTION_TRASHOLD = 0.1;
 
 var Galaxy = function () {
   function Galaxy(rims) {
@@ -27,18 +28,13 @@ var Galaxy = function () {
     key: '_addListeners',
     value: function _addListeners() {
       this.rims.forEach(function (rim) {
-        rim.div.ontouchstart = function (event) {
-          return rim.onPointerEnter(event.changedTouches[0]);
-        };
         rim.div.ontouchmove = function (event) {
           return rim.onPointerMove(event.changedTouches[0]);
         };
         rim.div.ontouchend = function (event) {
           return rim.onPointerOut();
         };
-        rim.div.onmouseenter = function (event) {
-          return rim.onPointerEnter(event);
-        };
+
         rim.div.onmousemove = function (event) {
           return rim.onPointerMove(event);
         };
@@ -70,6 +66,7 @@ var Rim = function () {
   function Rim(planetIds, speed, orbit, id) {
     _classCallCheck(this, Rim);
 
+    this.id = id;
     this.speed = speed;
     this.run = true;
     this.currentPhase = 0;
@@ -83,6 +80,7 @@ var Rim = function () {
     this.currentFramePhase = 0;
     this.lastFrameTime = 0;
     this.currentFrameTime = 0;
+    this.localCoordinateSystem = new RotatedCoordinatSystem(orbit.alpha, this.div);
   }
 
   _createClass(Rim, [{
@@ -102,23 +100,36 @@ var Rim = function () {
   }, {
     key: 'onPointerEnter',
     value: function onPointerEnter(point) {
+      if (this.pointerEntered) return;
+      this.pointerEntered = true;
+
       this.run = false;
       this.inertiaSpeed = 0;
-      this.startPhase = this.currentPhase + Utils.getAngle(point, this.div);
+      var localPoint = this.localCoordinateSystem.calculate({ x: point.clientX, y: point.clientY });
+      this.startPhase = this.currentPhase - Utils.getAngle(localPoint);
     }
   }, {
     key: 'onPointerMove',
     value: function onPointerMove(point) {
-      if (this.run) return;
-      this.moveTo(this.startPhase - Utils.getAngle(point, this.div));
-      this.lastFramePhase = this.currentFramePhase;
-      this.currentFramePhase = this.currentPhase;
-      this.lastFrameTime = this.currentFrameTime;
-      this.currentFrameTime = Date.now();
+      var localPoint = this.localCoordinateSystem.calculate({ x: point.clientX, y: point.clientY });
+      if (this._isOnOrbit(localPoint)) {
+        this.onPointerEnter(point);
+
+        this.moveTo(this.startPhase + Utils.getAngle(localPoint));
+        this.lastFramePhase = this.currentFramePhase;
+        this.currentFramePhase = this.currentPhase;
+        this.lastFrameTime = this.currentFrameTime;
+        this.currentFrameTime = Date.now();
+      } else {
+        this.onPointerOut(point);
+      }
     }
   }, {
     key: 'onPointerOut',
     value: function onPointerOut() {
+      if (!this.pointerEntered) return;
+      this.pointerEntered = false;
+
       this.run = true;
       var deltaTime = this.currentFrameTime - this.lastFrameTime;
       var inertia = (this.currentPhase - this.lastFramePhase) / deltaTime;
@@ -137,6 +148,14 @@ var Rim = function () {
       this.planets.forEach(function (planet) {
         return planet.moveByRim();
       });
+    }
+  }, {
+    key: '_isOnOrbit',
+    value: function _isOnOrbit(_ref) {
+      var x = _ref.x,
+          y = _ref.y;
+
+      return Math.abs(x * x + y * y - 1) < ORBIT_INTERACTION_TRASHOLD;
     }
   }]);
 
@@ -199,26 +218,55 @@ var Utils = function () {
     }
   }, {
     key: 'getAngle',
-    value: function getAngle(_ref, div) {
-      var clientX = _ref.clientX,
-          clientY = _ref.clientY;
+    value: function getAngle(_ref2) {
+      var x = _ref2.x,
+          y = _ref2.y;
 
-      var center = this._getCenterOf(div);
-      var dx = clientX - center.x;
-      var dy = clientY - center.y;
-      return Math.atan2(-dy, -dx);
+      return Math.atan2(x, y);
     }
   }, {
-    key: '_getCenterOf',
-    value: function _getCenterOf(div) {
+    key: 'getCenterOf',
+    value: function getCenterOf(div) {
+      var rect = div.getBoundingClientRect();
       return {
-        x: div.offsetLeft + div.offsetWidth * 0.6,
-        y: div.offsetTop + div.offsetHeight * 0.5
+        x: (rect.left + rect.right) / 2,
+        y: (rect.top + rect.bottom) / 2
       };
     }
   }]);
 
   return Utils;
+}();
+
+var RotatedCoordinatSystem = function () {
+  function RotatedCoordinatSystem(alpha, div) {
+    _classCallCheck(this, RotatedCoordinatSystem);
+
+    var rad = alpha / 180 * Math.PI;
+    this.matrix = {
+      x1: +Math.cos(rad),
+      x2: +Math.sin(rad),
+      y1: -Math.sin(rad),
+      y2: +Math.cos(rad)
+    };
+    this.div = div;
+    this.style = window.getComputedStyle(div);
+  }
+
+  _createClass(RotatedCoordinatSystem, [{
+    key: 'calculate',
+    value: function calculate(point) {
+      var center = Utils.getCenterOf(this.div);
+      var x = point.x - center.x;
+      var y = point.y - center.y;
+      return {
+        x: 2 * (x * this.matrix.x1 + y * this.matrix.x2) / parseInt(this.style.width),
+        y: 2 * (x * this.matrix.y1 + y * this.matrix.y2) / parseInt(this.style.height)
+      };
+    }
+  }]);
+
+  return RotatedCoordinatSystem;
 }();
 
 var outerRimPlanets = ["planet_1_1", "planet_1_2", "planet_1_3", "planet_1_4", "planet_1_5", "planet_1_6"];
@@ -227,6 +275,6 @@ var middleRimPlanets = ["planet_2_1", "planet_2_2", "planet_2_3"];
 
 var innerRimPlanets = ["planet_3_1", "planet_3_2"];
 
-var rims = [new Rim(outerRimPlanets, -3, { x: 48, y: 46, r: 50 }, "galaxy_outer_rim"), new Rim(middleRimPlanets, -13, { x: 50, y: 42, r: 52 }, "galaxy_middle_rim"), new Rim(innerRimPlanets, -23, { x: 50, y: 44, r: 52 }, "galaxy_inner_rim")];
+var rims = [new Rim(outerRimPlanets, -3, { x: 48, y: 46, r: 50, alpha: -7 }, "galaxy_outer_rim"), new Rim(middleRimPlanets, -13, { x: 50, y: 45, r: 52, alpha: -7 }, "galaxy_middle_rim"), new Rim(innerRimPlanets, -23, { x: 50, y: 44, r: 52, alpha: -7 }, "galaxy_inner_rim")];
 
 new Galaxy(rims).run();

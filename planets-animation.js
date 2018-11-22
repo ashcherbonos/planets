@@ -159,7 +159,7 @@ class Utils{
   static clamp(num, border) {
     return Math.min(Math.max(num, -border), border);
   }
-
+  
   static getAngle({x, y}) {
     return Math.atan2(x, y);
   }
@@ -218,9 +218,9 @@ let innerRimPlanets = [
 ];
 
 let rims = [
-  new Rim(outerRimPlanets, -3, {x:50, y:46, r:50, alpha:-7}, "galaxy_outer_rim"),
-  new Rim(middleRimPlanets, -13, {x:50, y:45, r:50, alpha:-7}, "galaxy_middle_rim"),
-  new Rim(innerRimPlanets, -23, {x:50, y:44, r:50, alpha:-7}, "galaxy_inner_rim"),
+  new Rim(outerRimPlanets, -3, {x:48, y:46, r:50, alpha:-7}, "galaxy_outer_rim"),
+  new Rim(middleRimPlanets, -13, {x:50, y:45, r:52, alpha:-7}, "galaxy_middle_rim"),
+  new Rim(innerRimPlanets, -23, {x:50, y:44, r:52, alpha:-7}, "galaxy_inner_rim"),
 ];
 
 new Galaxy(rims).run();
