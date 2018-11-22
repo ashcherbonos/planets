@@ -18,13 +18,11 @@ class Galaxy {
 
   _addListeners() {
     this.rims.forEach( rim => {
-      rim.div.ontouchstart = (event) => rim.onPointerEnter(event.changedTouches[0]);
       rim.div.ontouchmove = (event) => rim.onPointerMove(event.changedTouches[0]);
       rim.div.ontouchend = (event) => rim.onPointerOut();
       
-      //rim.div.onmouseenter = (event) => rim.onPointerEnter(event);
       rim.div.onmousemove = (event) => rim.onPointerMove(event);
-      //rim.div.onmouseleave = () => rim.onPointerOut();
+      rim.div.onmouseleave = () => rim.onPointerOut();
     });
   }
 
@@ -81,8 +79,6 @@ class Rim {
   }
 
   onPointerMove(point){
-    // if(this.run) return;
-
     let localPoint = this.localCoordinateSystem.calculate({x: point.clientX, y: point.clientY});
     if(this._isOnOrbit(localPoint)){
       this.onPointerEnter(point);
@@ -118,7 +114,6 @@ class Rim {
   }
 
   _isOnOrbit({x,y}){
-    //let {x,y} = this.localCoordinateSystem.calculate(point);
     return Math.abs(x * x + y * y - 1) < ORBIT_INTERACTION_TRASHOLD;
   }
 }
@@ -165,14 +160,6 @@ class Utils{
     return Math.min(Math.max(num, -border), border);
   }
 
-  /*
-  static getAngle({clientX, clientY}, div) {
-    let center = this.getCenterOf(div);
-    let dx = clientX - center.x;
-    let dy = clientY - center.y;
-    return Math.atan2(-dy, -dx);
-  }
-*/
   static getAngle({x, y}) {
     return Math.atan2(x, y);
   }
@@ -231,9 +218,9 @@ let innerRimPlanets = [
 ];
 
 let rims = [
-  new Rim(outerRimPlanets, -3, {x:48, y:46, r:50, alpha:-7}, "galaxy_outer_rim"),
-  new Rim(middleRimPlanets, -13, {x:50, y:42, r:52, alpha:-7}, "galaxy_middle_rim"),
-  new Rim(innerRimPlanets, -23, {x:50, y:44, r:52, alpha:-7}, "galaxy_inner_rim"),
+  new Rim(outerRimPlanets, -3, {x:50, y:46, r:50, alpha:-7}, "galaxy_outer_rim"),
+  new Rim(middleRimPlanets, -13, {x:50, y:45, r:50, alpha:-7}, "galaxy_middle_rim"),
+  new Rim(innerRimPlanets, -23, {x:50, y:44, r:50, alpha:-7}, "galaxy_inner_rim"),
 ];
 
 new Galaxy(rims).run();
