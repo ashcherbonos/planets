@@ -8,6 +8,7 @@ const PLANET_MAX_DELTA_SCALE = PLANET_MAX_SCALE - PLANET_MIN_SCALE;
 const VISIBLE_SECTOR_OF_GALAXY_START = -3.3;
 const VISIBLE_SECTOR_OF_GALAXY_END = 0.2;
 const VISIBLE_SECTOR_OF_GALAXY = VISIBLE_SECTOR_OF_GALAXY_END - VISIBLE_SECTOR_OF_GALAXY_START;
+const ORBIT_INTERACTION_TRASHOLD = 0.1;
 
 class Galaxy {
   constructor(rims) {
@@ -20,6 +21,7 @@ class Galaxy {
       rim.div.ontouchstart = (event) => rim.onPointerEnter(event.changedTouches[0]);
       rim.div.ontouchmove = (event) => rim.onPointerMove(event.changedTouches[0]);
       rim.div.ontouchend = (event) => rim.onPointerOut();
+      
       //rim.div.onmouseenter = (event) => rim.onPointerEnter(event);
       rim.div.onmousemove = (event) => rim.onPointerMove(event);
       //rim.div.onmouseleave = () => rim.onPointerOut();
@@ -74,16 +76,18 @@ class Rim {
 
     this.run = false;
     this.inertiaSpeed = 0;
-    this.startPhase = this.currentPhase + Utils.getAngle(point, this.div);
+    let localPoint = this.localCoordinateSystem.calculate({x: point.clientX, y: point.clientY});
+    this.startPhase = this.currentPhase - Utils.getAngle(localPoint);
   }
 
   onPointerMove(point){
-   // if(this.run) return;
+    // if(this.run) return;
 
-    if(this._isOnOrbit({x: point.clientX, y: point.clientY})){
+    let localPoint = this.localCoordinateSystem.calculate({x: point.clientX, y: point.clientY});
+    if(this._isOnOrbit(localPoint)){
       this.onPointerEnter(point);
   
-      this.moveTo( this.startPhase - Utils.getAngle(point, this.div) );
+      this.moveTo( this.startPhase + Utils.getAngle(localPoint) );
       this.lastFramePhase = this.currentFramePhase;
       this.currentFramePhase = this.currentPhase;            
       this.lastFrameTime = this.currentFrameTime;
@@ -91,7 +95,6 @@ class Rim {
     }else{
       this.onPointerOut(point);
     }
-
   }
 
   onPointerOut(){
@@ -114,9 +117,9 @@ class Rim {
     this.planets.forEach( planet => planet.moveByRim() );
   }
 
-  _isOnOrbit(point){
-    let {x,y} = this.localCoordinateSystem.calculate(point);
-    return Math.abs(x * x + y * y - 1) < 0.1;
+  _isOnOrbit({x,y}){
+    //let {x,y} = this.localCoordinateSystem.calculate(point);
+    return Math.abs(x * x + y * y - 1) < ORBIT_INTERACTION_TRASHOLD;
   }
 }
 
@@ -162,11 +165,16 @@ class Utils{
     return Math.min(Math.max(num, -border), border);
   }
 
+  /*
   static getAngle({clientX, clientY}, div) {
     let center = this.getCenterOf(div);
     let dx = clientX - center.x;
     let dy = clientY - center.y;
     return Math.atan2(-dy, -dx);
+  }
+*/
+  static getAngle({x, y}) {
+    return Math.atan2(x, y);
   }
 
   static getCenterOf(div) {
@@ -193,20 +201,12 @@ class RotatedCoordinatSystem{
 
   calculate(point) {
     let center = Utils.getCenterOf(this.div);
-    
     let x = point.x - center.x;
     let y = point.y - center.y;
-
-    let newPoint = {
+    return {
       x: 2 * (x * this.matrix.x1 + y * this.matrix.x2) / parseInt(this.style.width),
       y: 2 * (x * this.matrix.y1 + y * this.matrix.y2) / parseInt(this.style.height),
     };
-
-    //console.log("width: " + this.style.width + " " + this.div.getBoundingClientRect().width + " " + newPoint.x );
-    //console.log("height: " + this.style.height + " " + this.div.getBoundingClientRect().height + " " +newPoint.y );
-
-
-    return newPoint;
 	}
 }
 
