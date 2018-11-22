@@ -20,9 +20,9 @@ class Galaxy {
       rim.div.ontouchstart = (event) => rim.onPointerEnter(event.changedTouches[0]);
       rim.div.ontouchmove = (event) => rim.onPointerMove(event.changedTouches[0]);
       rim.div.ontouchend = (event) => rim.onPointerOut();
-      rim.div.onmouseenter = (event) => rim.onPointerEnter(event);
+      //rim.div.onmouseenter = (event) => rim.onPointerEnter(event);
       rim.div.onmousemove = (event) => rim.onPointerMove(event);
-      rim.div.onmouseleave = () => rim.onPointerOut();
+      //rim.div.onmouseleave = () => rim.onPointerOut();
     });
   }
 
@@ -40,6 +40,7 @@ class Galaxy {
 
 class Rim {
   constructor(planetIds, speed, orbit, id) {
+    this.id = id;
     this.speed = speed;        
     this.run = true;
     this.currentPhase = 0;
@@ -53,6 +54,7 @@ class Rim {
     this.currentFramePhase = 0;
     this.lastFrameTime = 0;
     this.currentFrameTime = 0;
+    this.localCoordinateSystem = new RotatedCoordinatSystem(orbit.alpha, this.div);
   }
 
   _initPlanets(planetIds) {
@@ -67,21 +69,35 @@ class Rim {
   }
 
   onPointerEnter(point){
+    if(this.pointerEntered)return;
+    this.pointerEntered = true;
+
     this.run = false;
     this.inertiaSpeed = 0;
     this.startPhase = this.currentPhase + Utils.getAngle(point, this.div);
   }
 
   onPointerMove(point){
-    if(this.run) return;
-    this.moveTo( this.startPhase - Utils.getAngle(point, this.div) );
-    this.lastFramePhase = this.currentFramePhase;
-    this.currentFramePhase = this.currentPhase;            
-    this.lastFrameTime = this.currentFrameTime;
-    this.currentFrameTime = Date.now();
+   // if(this.run) return;
+
+    if(this._isOnOrbit({x: point.clientX, y: point.clientY})){
+      this.onPointerEnter(point);
+  
+      this.moveTo( this.startPhase - Utils.getAngle(point, this.div) );
+      this.lastFramePhase = this.currentFramePhase;
+      this.currentFramePhase = this.currentPhase;            
+      this.lastFrameTime = this.currentFrameTime;
+      this.currentFrameTime = Date.now();
+    }else{
+      this.onPointerOut(point);
+    }
+
   }
 
   onPointerOut(){
+    if(!this.pointerEntered)return;
+    this.pointerEntered = false;
+
     this.run = true;
 		let deltaTime = this.currentFrameTime - this.lastFrameTime;
 		let inertia = (this.currentPhase - this.lastFramePhase) / deltaTime;
@@ -96,6 +112,11 @@ class Rim {
   moveTo(angle) {
     this.currentPhase = angle;
     this.planets.forEach( planet => planet.moveByRim() );
+  }
+
+  _isOnOrbit(point){
+    let {x,y} = this.localCoordinateSystem.calculate(point);
+    return Math.abs(x * x + y * y - 1) < 0.1;
   }
 }
 
@@ -142,19 +163,51 @@ class Utils{
   }
 
   static getAngle({clientX, clientY}, div) {
-    let center = this._getCenterOf(div);
+    let center = this.getCenterOf(div);
     let dx = clientX - center.x;
     let dy = clientY - center.y;
     return Math.atan2(-dy, -dx);
   }
 
-  static _getCenterOf(div) {
+  static getCenterOf(div) {
     let rect = div.getBoundingClientRect();
     return{
-      x: (rect.left+rect.right)/2, 
-      y: (rect.top+rect.bottom)/2
+      x: (rect.left + rect.right) / 2, 
+      y: (rect.top  +rect.bottom) / 2,
     }
   }
+}
+
+class RotatedCoordinatSystem{
+  constructor(alpha, div) {
+    let rad = alpha/180*Math.PI;
+    this.matrix = {
+      x1: + Math.cos(rad),
+      x2: + Math.sin(rad),
+      y1: - Math.sin(rad),
+      y2: + Math.cos(rad),
+    }
+    this.div = div;
+    this.style = window.getComputedStyle(div); 
+  }
+
+  calculate(point) {
+    let center = Utils.getCenterOf(this.div);
+    
+    let x = point.x - center.x;
+    let y = point.y - center.y;
+
+    let newPoint = {
+      x: 2 * (x * this.matrix.x1 + y * this.matrix.x2) / parseInt(this.style.width),
+      y: 2 * (x * this.matrix.y1 + y * this.matrix.y2) / parseInt(this.style.height),
+    };
+
+    //console.log("width: " + this.style.width + " " + this.div.getBoundingClientRect().width + " " + newPoint.x );
+    //console.log("height: " + this.style.height + " " + this.div.getBoundingClientRect().height + " " +newPoint.y );
+
+
+    return newPoint;
+	}
 }
 
 let outerRimPlanets = [
@@ -178,10 +231,9 @@ let innerRimPlanets = [
 ];
 
 let rims = [
-  new Rim(outerRimPlanets, -3, {x:48, y:46, r:50}, "galaxy_outer_rim"),
-  new Rim(middleRimPlanets, -13, {x:50, y:42, r:52}, "galaxy_middle_rim"),
-  new Rim(innerRimPlanets, -23, {x:50, y:44, r:52}, "galaxy_inner_rim"),
+  new Rim(outerRimPlanets, -3, {x:48, y:46, r:50, alpha:-7}, "galaxy_outer_rim"),
+  new Rim(middleRimPlanets, -13, {x:50, y:42, r:52, alpha:-7}, "galaxy_middle_rim"),
+  new Rim(innerRimPlanets, -23, {x:50, y:44, r:52, alpha:-7}, "galaxy_inner_rim"),
 ];
 
 new Galaxy(rims).run();
-
