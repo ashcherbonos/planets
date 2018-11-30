@@ -6,8 +6,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var FRAME_TIME = 16;
 var BASE_SPEED_PER_FRAME = 0.0001;
-var DECCELERATION = 0.975;
-var MAX_SPEED = 0.5;
 var PLANET_MIN_SCALE = 0.6;
 var PLANET_MAX_SCALE = 1.2;
 var PLANET_MAX_DELTA_SCALE = PLANET_MAX_SCALE - PLANET_MIN_SCALE;
@@ -27,32 +25,33 @@ var Galaxy = function () {
   _createClass(Galaxy, [{
     key: '_addListeners',
     value: function _addListeners() {
-      this.rims.forEach(function (rim) {
-        rim.div.ontouchmove = function (event) {
-          return rim.onPointerMove(event.changedTouches[0]);
-        };
-        rim.div.ontouchend = function (event) {
-          return rim.onPointerOut();
-        };
+      var _this = this;
 
-        rim.div.onmousemove = function (event) {
+      document.onpointerdown = function (event) {
+        _this.rims.forEach(function (rim) {
+          return rim.onPointerDown(event);
+        });
+      };
+      document.onpointerup = function (_) {
+        _this.rims.forEach(function (rim) {
+          return rim.onPointerUp();
+        });
+      };
+      document.onmousemove = function (event) {
+        _this.rims.forEach(function (rim) {
           return rim.onPointerMove(event);
-        };
-        rim.div.onmouseleave = function () {
-          return rim.onPointerOut();
-        };
-      });
+        });
+      };
     }
   }, {
     key: 'run',
     value: function run() {
-      var _this = this;
+      var _this2 = this;
 
       setInterval(function () {
-        _this.rims.forEach(function (rim) {
+        _this2.rims.forEach(function (rim) {
           if (!rim.run) return;
-          rim.inertiaSpeed *= DECCELERATION;
-          var speed = BASE_SPEED_PER_FRAME * rim.speed + rim.inertiaSpeed;
+          var speed = BASE_SPEED_PER_FRAME * rim.speed * rim.speedCoeff;
           rim.moveBy(speed);
         });
       }, FRAME_TIME);
@@ -63,78 +62,85 @@ var Galaxy = function () {
 }();
 
 var Rim = function () {
-  function Rim(planetIds, speed, orbit, id) {
+  function Rim(planetIds, speed, pointerOnSpeedCoeff, orbit, id) {
     _classCallCheck(this, Rim);
 
     this.id = id;
     this.speed = speed;
+    this.speedCoeff = 1;
+    this.pointerOnSpeedCoeff = pointerOnSpeedCoeff;
     this.run = true;
     this.currentPhase = 0;
     this.startPhase = 0;
     this.planets = this._initPlanets(planetIds);
-    this.lastFramePhase = 0;
-    this.inertiaSpeed = 0;
     this.orbit = orbit;
     this.div = document.getElementById(id);
-    this.lastFramePhase = 0;
-    this.currentFramePhase = 0;
-    this.lastFrameTime = 0;
-    this.currentFrameTime = 0;
     this.localCoordinateSystem = new RotatedCoordinatSystem(orbit.alpha, this.div);
+    this.pointerdown = false;
   }
 
   _createClass(Rim, [{
     key: '_initPlanets',
     value: function _initPlanets(planetIds) {
-      var _this2 = this;
+      var _this3 = this;
 
       var planetsPhase = VISIBLE_SECTOR_OF_GALAXY_START;
       var deltaPhase = VISIBLE_SECTOR_OF_GALAXY / planetIds.length;
       var planets = [];
       planetIds.forEach(function (id) {
-        planets.push(new Planet(id, planetsPhase, _this2));
+        planets.push(new Planet(id, planetsPhase, _this3));
         planetsPhase += deltaPhase;
       });
       return planets;
     }
   }, {
-    key: 'onPointerEnter',
-    value: function onPointerEnter(point) {
-      if (this.pointerEntered) return;
-      this.pointerEntered = true;
-
-      this.run = false;
-      this.inertiaSpeed = 0;
+    key: 'onPointerDown',
+    value: function onPointerDown(point) {
       var localPoint = this.localCoordinateSystem.calculate({ x: point.clientX, y: point.clientY });
-      this.startPhase = this.currentPhase - Utils.getAngle(localPoint);
+      if (this._isOnOrbit(localPoint)) {
+        this.pointerdown = true;
+        this.run = false;
+        var _localPoint = this.localCoordinateSystem.calculate({ x: point.clientX, y: point.clientY });
+        this.startPhase = this.currentPhase - Utils.getAngle(_localPoint);
+      }
+    }
+  }, {
+    key: 'onPointerUp',
+    value: function onPointerUp() {
+      if (!this.pointerdown) return;
+      this.pointerdown = false;
+      this.run = true;
+    }
+  }, {
+    key: 'onPointerOnOrbit',
+    value: function onPointerOnOrbit() {
+      if (this.pointerdown) return;
+      if (this.pointerOnOrbit) return;
+      this.pointerOnOrbit = true;
+      this.speedCoeff = this.pointerOnSpeedCoeff;
     }
   }, {
     key: 'onPointerMove',
     value: function onPointerMove(point) {
+      if (this.pointerdown) {
+        var _localPoint2 = this.localCoordinateSystem.calculate({ x: point.clientX, y: point.clientY });
+        this.moveTo(this.startPhase + Utils.getAngle(_localPoint2));
+        return;
+      }
+
       var localPoint = this.localCoordinateSystem.calculate({ x: point.clientX, y: point.clientY });
       if (this._isOnOrbit(localPoint)) {
-        this.onPointerEnter(point);
-
-        this.moveTo(this.startPhase + Utils.getAngle(localPoint));
-        this.lastFramePhase = this.currentFramePhase;
-        this.currentFramePhase = this.currentPhase;
-        this.lastFrameTime = this.currentFrameTime;
-        this.currentFrameTime = Date.now();
+        this.onPointerOnOrbit();
       } else {
-        this.onPointerOut(point);
+        this.onPointerOutOfOrbit(point);
       }
     }
   }, {
-    key: 'onPointerOut',
-    value: function onPointerOut() {
-      if (!this.pointerEntered) return;
-      this.pointerEntered = false;
-
-      this.run = true;
-      var deltaTime = this.currentFrameTime - this.lastFrameTime;
-      var inertia = (this.currentPhase - this.lastFramePhase) / deltaTime;
-      inertia = Utils.clamp(inertia, MAX_SPEED);
-      this.inertiaSpeed = inertia;
+    key: 'onPointerOutOfOrbit',
+    value: function onPointerOutOfOrbit() {
+      if (this.pointerdown) return;
+      this.speedCoeff = 1;
+      this.pointerOnOrbit = false;
     }
   }, {
     key: 'moveBy',
@@ -275,6 +281,6 @@ var middleRimPlanets = ["planet_2_1", "planet_2_2", "planet_2_3"];
 
 var innerRimPlanets = ["planet_3_1", "planet_3_2"];
 
-var rims = [new Rim(outerRimPlanets, -3, { x: 48, y: 46, r: 50, alpha: -7 }, "galaxy_outer_rim"), new Rim(middleRimPlanets, -13, { x: 50, y: 45, r: 52, alpha: -7 }, "galaxy_middle_rim"), new Rim(innerRimPlanets, -23, { x: 50, y: 44, r: 52, alpha: -7 }, "galaxy_inner_rim")];
+var rims = [new Rim(outerRimPlanets, -3, 50, { x: 48, y: 46, r: 50, alpha: -7 }, "galaxy_outer_rim"), new Rim(middleRimPlanets, -13, 20, { x: 50, y: 45, r: 52, alpha: -7 }, "galaxy_middle_rim"), new Rim(innerRimPlanets, -23, 15, { x: 50, y: 44, r: 52, alpha: -7 }, "galaxy_inner_rim")];
 
 new Galaxy(rims).run();
