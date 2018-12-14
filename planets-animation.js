@@ -24,6 +24,7 @@ class Galaxy {
     setInterval( () => {
       this.rims.forEach( rim => {
         if(!rim.run) return;
+        if(rim.pointerOverThePlanet) return;
         let speed = BASE_SPEED_PER_FRAME * rim.speed * rim.speedCoeff;
         rim.moveBy(speed);
       });
@@ -37,6 +38,7 @@ class Rim {
     this.speed = speed;        
     this.speedCoeff = 1;  
     this.pointerOnSpeedCoeff = pointerOnSpeedCoeff;
+    this.pointerOverThePlanet = false;
     this.run = true;
     this.currentPhase = 0;
     this.startPhase = 0;
@@ -121,6 +123,13 @@ class Planet {
     this.element = document.getElementById(id);
     this.phase = phase;
     this.rim = rim;
+    this._addListeners();
+  }
+
+  _addListeners() {
+    this.element.onpointerenter = (_) => {this.rim.pointerOverThePlanet = true};
+    this.element.onpointermove = (_) => {this.rim.pointerOverThePlanet = true};
+    this.element.onpointerout = (_) => {this.rim.pointerOverThePlanet = false};
   }
 
   moveByRim() {
@@ -216,9 +225,9 @@ let innerRimPlanets = [
 ];
 
 let rims = [
-  new Rim(outerRimPlanets, -3, 50, {x:48, y:46, r:50, alpha:-7}, "galaxy_outer_rim"),
-  new Rim(middleRimPlanets, -13, 20, {x:50, y:45, r:52, alpha:-7}, "galaxy_middle_rim"),
-  new Rim(innerRimPlanets, -23, 15, {x:50, y:44, r:52, alpha:-7}, "galaxy_inner_rim"),
+  new Rim(outerRimPlanets, -3, 8, {x:48, y:46, r:50, alpha:-7}, "galaxy_outer_rim"),
+  new Rim(middleRimPlanets, -13, 8, {x:50, y:45, r:52, alpha:-7}, "galaxy_middle_rim"),
+  new Rim(innerRimPlanets, -23, 8, {x:50, y:44, r:52, alpha:-7}, "galaxy_inner_rim"),
 ];
 
 new Galaxy(rims).run();
