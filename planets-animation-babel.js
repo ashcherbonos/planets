@@ -51,6 +51,7 @@ var Galaxy = function () {
       setInterval(function () {
         _this2.rims.forEach(function (rim) {
           if (!rim.run) return;
+          if (rim.pointerOverThePlanet) return;
           var speed = BASE_SPEED_PER_FRAME * rim.speed * rim.speedCoeff;
           rim.moveBy(speed);
         });
@@ -69,6 +70,7 @@ var Rim = function () {
     this.speed = speed;
     this.speedCoeff = 1;
     this.pointerOnSpeedCoeff = pointerOnSpeedCoeff;
+    this.pointerOverThePlanet = false;
     this.run = true;
     this.currentPhase = 0;
     this.startPhase = 0;
@@ -175,9 +177,28 @@ var Planet = function () {
     this.element = document.getElementById(id);
     this.phase = phase;
     this.rim = rim;
+    this._addListeners();
   }
 
   _createClass(Planet, [{
+    key: '_addListeners',
+    value: function _addListeners() {
+      var _this4 = this;
+
+      this.element.onpointerenter = function (_) {
+        _this4.rim.pointerOverThePlanet = true;
+      };
+      this.element.onpointermove = function (_) {
+        _this4.rim.pointerOverThePlanet = true;
+      };
+      this.element.onmouseover = function (_) {
+        _this4.rim.pointerOverThePlanet = true;
+      };
+      this.element.onpointerout = function (_) {
+        _this4.rim.pointerOverThePlanet = false;
+      };
+    }
+  }, {
     key: 'moveByRim',
     value: function moveByRim() {
       this._jumpOverInvisibleSector();
@@ -281,6 +302,6 @@ var middleRimPlanets = ["planet_2_1", "planet_2_2", "planet_2_3"];
 
 var innerRimPlanets = ["planet_3_1", "planet_3_2"];
 
-var rims = [new Rim(outerRimPlanets, -3, 50, { x: 48, y: 46, r: 50, alpha: -7 }, "galaxy_outer_rim"), new Rim(middleRimPlanets, -13, 20, { x: 50, y: 45, r: 52, alpha: -7 }, "galaxy_middle_rim"), new Rim(innerRimPlanets, -23, 15, { x: 50, y: 44, r: 52, alpha: -7 }, "galaxy_inner_rim")];
+var rims = [new Rim(outerRimPlanets, -3, 8, { x: 48, y: 46, r: 50, alpha: -7 }, "galaxy_outer_rim"), new Rim(middleRimPlanets, -13, 8, { x: 50, y: 45, r: 52, alpha: -7 }, "galaxy_middle_rim"), new Rim(innerRimPlanets, -23, 8, { x: 50, y: 44, r: 52, alpha: -7 }, "galaxy_inner_rim")];
 
 new Galaxy(rims).run();

@@ -129,6 +129,7 @@ class Planet {
   _addListeners() {
     this.element.onpointerenter = (_) => {this.rim.pointerOverThePlanet = true};
     this.element.onpointermove = (_) => {this.rim.pointerOverThePlanet = true};
+    this.element.onmouseover = (_) => {this.rim.pointerOverThePlanet = true};
     this.element.onpointerout = (_) => {this.rim.pointerOverThePlanet = false};
   }
 
@@ -147,8 +148,8 @@ class Planet {
 
   get sectorShiftSign() {
 		return this.phaseInGalaxy < VISIBLE_SECTOR_OF_GALAXY_START ? 1 :
-			this.phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
-			0;
+    this.phaseInGalaxy > VISIBLE_SECTOR_OF_GALAXY_END ? -1 : 
+    0;
 	}
 	
 	get phaseInGalaxy() {
