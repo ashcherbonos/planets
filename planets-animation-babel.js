@@ -191,10 +191,24 @@ var Planet = function () {
       this.element.onpointermove = function (_) {
         _this4.rim.pointerOverThePlanet = true;
       };
+      this.element.pointerover = function (_) {
+        _this4.rim.pointerOverThePlanet = true;
+      };
+
+      this.element.onmouseenter = function (_) {
+        _this4.rim.pointerOverThePlanet = true;
+      };
       this.element.onmouseover = function (_) {
         _this4.rim.pointerOverThePlanet = true;
       };
+      this.element.onmousemove = function (_) {
+        _this4.rim.pointerOverThePlanet = true;
+      };
+
       this.element.onpointerout = function (_) {
+        _this4.rim.pointerOverThePlanet = false;
+      };
+      this.element.onmouseout = function (_) {
         _this4.rim.pointerOverThePlanet = false;
       };
     }

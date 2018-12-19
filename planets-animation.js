@@ -129,8 +129,15 @@ class Planet {
   _addListeners() {
     this.element.onpointerenter = (_) => {this.rim.pointerOverThePlanet = true};
     this.element.onpointermove = (_) => {this.rim.pointerOverThePlanet = true};
+    this.element.pointerover = (_) => {this.rim.pointerOverThePlanet = true};
+     
+
+    this.element.onmouseenter = (_) => {this.rim.pointerOverThePlanet = true};
     this.element.onmouseover = (_) => {this.rim.pointerOverThePlanet = true};
+    this.element.onmousemove = (_) => {this.rim.pointerOverThePlanet = true};
+    
     this.element.onpointerout = (_) => {this.rim.pointerOverThePlanet = false};
+    this.element.onmouseout = (_) => {this.rim.pointerOverThePlanet = false};
   }
 
   moveByRim() {
